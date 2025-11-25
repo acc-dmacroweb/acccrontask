@@ -387,6 +387,24 @@ class AdminAccCronTaskController extends ModuleAdminController
         Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
     }
 
+    /**
+     * Procesa la eliminación de una tarea cron
+     * Asegura que el objeto esté cargado antes de eliminar
+     */
+    public function processDelete()
+    {
+        // Asegurar que el objeto esté cargado antes de eliminar
+        if (!Validate::isLoadedObject($this->object)) {
+            $id = (int)Tools::getValue($this->identifier);
+            if ($id) {
+                $this->object = new $this->className($id);
+            }
+        }
+        
+        // Llamar al método padre que maneja la eliminación
+        return parent::processDelete();
+    }
+
     public function initToolbar()
     {
         parent::initToolbar();

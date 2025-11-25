@@ -106,14 +106,49 @@ $(document).ready(function() {
                 }
                 
                 // Si aún no encontramos deleteLink, construirlo desde el ID
-                if (!deleteLink) {
-                    var idMatch = originalActionsHtml.match(/id_acccrontask=(\d+)/) || 
-                                 $row.find('input[type="checkbox"]').val();
+                if (!deleteLink || deleteLink === '#' || deleteLink.indexOf('delete') === -1) {
+                    // Intentar obtener el ID de varias formas
+                    var id = null;
+                    
+                    // Método 1: Buscar en el HTML original
+                    var idMatch = originalActionsHtml.match(/id_acccrontask[=:](\d+)/i) || 
+                                 originalActionsHtml.match(/deleteacccrontask[&?]id_acccrontask=(\d+)/i);
                     if (idMatch) {
-                        var id = typeof idMatch === 'string' ? idMatch.match(/\d+/)[0] : idMatch;
-                        var baseUrl = window.location.href.split('?')[0];
+                        id = idMatch[1] || idMatch[0].match(/\d+/)[0];
+                    }
+                    
+                    // Método 2: Buscar en el checkbox
+                    if (!id) {
+                        var checkbox = $row.find('input[type="checkbox"][name*="acccrontask"]');
+                        if (checkbox.length) {
+                            id = checkbox.val();
+                        }
+                    }
+                    
+                    // Método 3: Buscar en cualquier input o data attribute
+                    if (!id) {
+                        var rowId = $row.attr('id') || $row.data('id');
+                        if (rowId) {
+                            var numMatch = rowId.match(/\d+/);
+                            if (numMatch) {
+                                id = numMatch[0];
+                            }
+                        }
+                    }
+                    
+                    // Si encontramos el ID, construir el enlace
+                    if (id) {
+                        // Obtener la URL base y el token
+                        var baseUrl = '{$current_index|escape:'javascript':'UTF-8'}';
                         var token = '{$token|escape:'javascript':'UTF-8'}';
-                        deleteLink = baseUrl + '?controller=AdminAccCronTask&id_acccrontask=' + id + '&deleteacccrontask&token=' + token;
+                        
+                        // Si no tenemos baseUrl del template, construirla desde window.location
+                        if (!baseUrl || baseUrl === '') {
+                            baseUrl = window.location.href.split('?')[0] + '?controller=AdminAccCronTask';
+                        }
+                        
+                        // Construir el enlace de eliminar
+                        deleteLink = baseUrl + '&id_acccrontask=' + id + '&deleteacccrontask&token=' + token;
                     }
                 }
                 
@@ -129,13 +164,35 @@ $(document).ready(function() {
                     }
                     
                     // Desplegable solo con Eliminar
-                    if (deleteLink) {
+                    if (deleteLink && deleteLink !== '#' && deleteLink.indexOf('delete') !== -1) {
                         newActions += '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
                             '<span class="caret"></span>' +
                             '</button>' +
                             '<ul class="dropdown-menu">' +
                             '<li><a href="' + deleteLink + '" onclick="return confirm(\'¿Está seguro de que desea eliminar esta tarea?\');"><i class="icon-trash"></i> Eliminar</a></li>' +
                             '</ul>';
+                    } else if (deleteLink && deleteLink !== '#') {
+                        // Si tenemos un enlace pero no es válido, intentar construir uno mejor
+                        var idMatch = $row.find('input[type="checkbox"]').val() || 
+                                     originalActionsHtml.match(/\d+/);
+                        if (idMatch) {
+                            var id = typeof idMatch === 'string' ? idMatch : idMatch[0];
+                            var baseUrl = '{$current_index|escape:'javascript':'UTF-8'}';
+                            var token = '{$token|escape:'javascript':'UTF-8'}';
+                            
+                            // Si no tenemos baseUrl del template, construirla desde window.location
+                            if (!baseUrl || baseUrl === '') {
+                                baseUrl = window.location.href.split('?')[0] + '?controller=AdminAccCronTask';
+                            }
+                            
+                            var validDeleteLink = baseUrl + '&id_acccrontask=' + id + '&deleteacccrontask&token=' + token;
+                            newActions += '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                                '<span class="caret"></span>' +
+                                '</button>' +
+                                '<ul class="dropdown-menu">' +
+                                '<li><a href="' + validDeleteLink + '" onclick="return confirm(\'¿Está seguro de que desea eliminar esta tarea?\');"><i class="icon-trash"></i> Eliminar</a></li>' +
+                                '</ul>';
+                        }
                     }
                     
                     newActions += '</div>';
