@@ -74,10 +74,52 @@ class AccCronTask extends Module
 
     public function install()
     {
-        return parent::install() &&
-            $this->installDb() &&
-            $this->registerHook('actionCronJob') &&
-            $this->installTab();
+        if (!parent::install()) {
+            return false;
+        }
+        
+        if (!$this->installDb()) {
+            return false;
+        }
+        
+        if (!$this->installTab()) {
+            return false;
+        }
+        
+        // Limpiar caché después de la instalación
+        $this->clearCache();
+        
+        return true;
+    }
+    
+    /**
+     * Limpia la caché de PrestaShop
+     * Compatible con PrestaShop 1.7 y 9
+     */
+    protected function clearCache()
+    {
+        try {
+            // Método compatible con PrestaShop 1.7 y 9
+            if (class_exists('Tools') && method_exists('Tools', 'clearCache')) {
+                Tools::clearCache();
+            }
+            
+            // Método para PrestaShop 1.7
+            if (class_exists('Cache') && method_exists('Cache', 'clean')) {
+                Cache::clean('*');
+            }
+            
+            // Método adicional para PrestaShop 9
+            if (version_compare(_PS_VERSION_, '8.0.0', '>=')) {
+                if (class_exists('PrestaShop\PrestaShop\Core\Cache\Clearer\CacheClearerInterface')) {
+                    // Para PS 8+, usar el sistema de caché moderno si está disponible
+                    // Esto es opcional y no crítico
+                }
+            }
+        } catch (Exception $e) {
+            // Si falla la limpieza de caché, no es crítico, continuar
+            // En PS 1.7 puede que algunos métodos no existan
+        }
     }
     
     /**
@@ -128,7 +170,15 @@ class AccCronTask extends Module
 
     protected function installTab()
     {
-        $tab = new Tab();
+        // Verificar si el Tab ya existe
+        $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
+        
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+        } else {
+            $tab = new Tab();
+        }
+        
         $tab->active = 1;
         $tab->class_name = 'AdminAccCronTask';
         $tab->name = [];
@@ -137,7 +187,18 @@ class AccCronTask extends Module
         }
         $tab->id_parent = (int)Tab::getIdFromClassName('AdminTools');
         $tab->module = $this->name;
-        return $tab->add();
+        
+        // Para PrestaShop 9.0+, NO establecemos route_name
+        // El sistema generará la ruta automáticamente basándose en class_name y módulo
+        // En PS 1.7 y PS 8 funciona sin route_name (como en PS 1.7)
+        // En PS 9, simplemente no tocamos route_name para que use el sistema automático
+        // No establecemos route_name en PS 9 para evitar errores de "route does not exist"
+        
+        if ($id_tab) {
+            return $tab->update();
+        } else {
+            return $tab->add();
+        }
     }
 
     protected function uninstallTab()
@@ -150,8 +211,59 @@ class AccCronTask extends Module
         return false;
     }
 
+    /**
+     * Actualiza el Tab para PrestaShop 9.0+
+     * Útil si el módulo fue instalado antes de esta actualización
+     * Solo necesario para PS 9 donde route_name es obligatorio
+     */
+    public function updateTabForPS9()
+    {
+        $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
+        if ($id_tab) {
+            $tab = new Tab($id_tab);
+            // Para PrestaShop 9.0+, NO establecemos route_name
+            // El sistema generará la ruta automáticamente
+            // Solo aseguramos que los campos básicos estén correctos
+            if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+                // Asegurar que el módulo esté asignado
+                if (empty($tab->module)) {
+                    $tab->module = $this->name;
+                }
+                
+                // Asegurar que active esté en 1
+                $tab->active = 1;
+                
+                // Asegurar que class_name esté correcto
+                if (empty($tab->class_name)) {
+                    $tab->class_name = 'AdminAccCronTask';
+                }
+                
+                // NO establecemos route_name - el sistema lo generará automáticamente
+                // Si route_name está establecido y causa problemas, lo eliminamos
+                if (property_exists($tab, 'route_name') && !empty($tab->route_name)) {
+                    $tab->route_name = '';
+                }
+                
+                if ($tab->update()) {
+                    $this->clearCache();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public function getContent()
     {
+        // Solo actualizar Tab para PS 9.0+ (donde route_name es obligatorio)
+        // PS 1.7 y PS 8 funcionan sin route_name
+        if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+            // Forzar actualización del Tab en PS 9
+            $this->updateTabForPS9();
+            // Limpiar caché de routing después de actualizar
+            $this->clearCache();
+        }
+        
         Tools::redirectAdmin($this->context->link->getAdminLink('AdminAccCronTask'));
     }
 }

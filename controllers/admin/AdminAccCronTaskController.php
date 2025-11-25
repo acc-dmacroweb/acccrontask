@@ -30,9 +30,6 @@ class AdminAccCronTaskController extends ModuleAdminController
 {
     public function __construct()
     {
-        // Cargar el módulo para asegurar que las clases estén disponibles
-        $module = Module::getInstanceByName('acccrontask');
-        
         $this->bootstrap = true;
         $this->table = 'acccrontask';
         $this->className = 'AccCronTaskModel';
@@ -41,49 +38,54 @@ class AdminAccCronTaskController extends ModuleAdminController
         $this->context = Context::getContext();
 
         parent::__construct();
+        
+        // Asegurar que el módulo esté disponible para traducciones (compatible con PS 9)
+        if (!$this->module) {
+            $this->module = Module::getInstanceByName('acccrontask');
+        }
 
         $this->fields_list = [
             'name' => [
-                'title' => $this->l('Nombre'),
+                'title' => $this->module->l('Nombre'),
                 'width' => 'auto',
                 'filter_key' => 'a!name',
             ],
             'url' => [
-                'title' => $this->l('URL'),
+                'title' => $this->module->l('URL'),
                 'width' => 'auto',
                 'callback' => 'getUrlDisplay',
                 'filter_key' => 'a!url',
             ],
             'hour' => [
-                'title' => $this->l('Hora'),
+                'title' => $this->module->l('Hora'),
                 'width' => 'auto',
                 'align' => 'center',
             ],
             'minute' => [
-                'title' => $this->l('Minuto'),
+                'title' => $this->module->l('Minuto'),
                 'width' => 'auto',
                 'align' => 'center',
             ],
             'month' => [
-                'title' => $this->l('Mes'),
+                'title' => $this->module->l('Mes'),
                 'width' => 'auto',
                 'align' => 'center',
                 'callback' => 'getMonthDisplay',
             ],
             'day_of_week' => [
-                'title' => $this->l('Día de la semana'),
+                'title' => $this->module->l('Día de la semana'),
                 'width' => 'auto',
                 'align' => 'center',
                 'callback' => 'getDayOfWeekDisplay',
             ],
             'last_execution' => [
-                'title' => $this->l('Última ejecución'),
+                'title' => $this->module->l('Última ejecución'),
                 'width' => 'auto',
                 'type' => 'datetime',
                 'align' => 'center',
             ],
             'active' => [
-                'title' => $this->l('Activo'),
+                'title' => $this->module->l('Activo'),
                 'width' => 'auto',
                 'align' => 'center',
                 'active' => 'status',
@@ -95,9 +97,9 @@ class AdminAccCronTaskController extends ModuleAdminController
 
         $this->bulk_actions = [
             'delete' => [
-                'text' => $this->l('Eliminar seleccionados'),
+                'text' => $this->module->l('Eliminar seleccionados'),
                 'icon' => 'icon-trash',
-                'confirm' => $this->l('¿Eliminar los elementos seleccionados?'),
+                'confirm' => $this->module->l('¿Eliminar los elementos seleccionados?'),
             ],
         ];
     }
@@ -122,12 +124,12 @@ class AdminAccCronTaskController extends ModuleAdminController
 
         $this->toolbar_btn['new'] = [
             'href' => self::$currentIndex . '&add' . $this->table . '&token=' . $this->token,
-            'desc' => $this->l('Añadir nueva tarea'),
+            'desc' => $this->module->l('Añadir nueva tarea'),
         ];
 
         $this->toolbar_btn['export'] = [
             'href' => self::$currentIndex . '&action=generateCron&token=' . $this->token,
-            'desc' => $this->l('Generar comando Cron'),
+            'desc' => $this->module->l('Generar comando Cron'),
             'icon' => 'process-icon-cogs',
         ];
 
@@ -149,36 +151,36 @@ class AdminAccCronTaskController extends ModuleAdminController
     {
         $this->fields_form = [
             'legend' => [
-                'title' => $this->l('Tarea Cron'),
+                'title' => $this->module->l('Tarea Cron'),
                 'icon' => 'icon-cog',
             ],
             'input' => [
                 [
                     'type' => 'text',
-                    'label' => $this->l('Nombre'),
+                    'label' => $this->module->l('Nombre'),
                     'name' => 'name',
                     'required' => true,
                     'maxlength' => 255,
                 ],
                 [
                     'type' => 'text',
-                    'label' => $this->l('URL'),
+                    'label' => $this->module->l('URL'),
                     'name' => 'url',
                     'required' => true,
-                    'desc' => $this->l('URL completa a ejecutar'),
+                    'desc' => $this->module->l('URL completa a ejecutar'),
                 ],
                 [
                     'type' => 'select',
-                    'label' => $this->l('Frecuencia'),
+                    'label' => $this->module->l('Frecuencia'),
                     'name' => 'frequency_day',
                     'required' => true,
                     'options' => [
                         'query' => [
-                            ['id' => 5, 'name' => $this->l('Cada hora')],
-                            ['id' => 0, 'name' => $this->l('Diario')],
-                            ['id' => 1, 'name' => $this->l('Semanal')],
-                            ['id' => 2, 'name' => $this->l('Mensual')],
-                            ['id' => 3, 'name' => $this->l('Anual')],
+                            ['id' => 5, 'name' => $this->module->l('Cada hora')],
+                            ['id' => 0, 'name' => $this->module->l('Diario')],
+                            ['id' => 1, 'name' => $this->module->l('Semanal')],
+                            ['id' => 2, 'name' => $this->module->l('Mensual')],
+                            ['id' => 3, 'name' => $this->module->l('Anual')],
                         ],
                         'id' => 'id',
                         'name' => 'name',
@@ -187,99 +189,99 @@ class AdminAccCronTaskController extends ModuleAdminController
                 ],
                 [
                     'type' => 'text',
-                    'label' => $this->l('Minuto'),
+                    'label' => $this->module->l('Minuto'),
                     'name' => 'minute',
                     'required' => true,
-                    'suffix' => $this->l('(0-59)'),
+                    'suffix' => $this->module->l('(0-59)'),
                     'class' => 'fixed-width-sm field-minute',
-                    'desc' => $this->l('Minuto de ejecución (0-59)'),
+                    'desc' => $this->module->l('Minuto de ejecución (0-59)'),
                 ],
                 [
                     'type' => 'text',
-                    'label' => $this->l('Hora'),
+                    'label' => $this->module->l('Hora'),
                     'name' => 'hour',
                     'required' => false,
-                    'suffix' => $this->l('(0-23)'),
+                    'suffix' => $this->module->l('(0-23)'),
                     'class' => 'fixed-width-sm field-hour',
-                    'desc' => $this->l('Hora de ejecución (0-23)'),
+                    'desc' => $this->module->l('Hora de ejecución (0-23)'),
                 ],
                 [
                     'type' => 'select',
-                    'label' => $this->l('Día de la semana'),
+                    'label' => $this->module->l('Día de la semana'),
                     'name' => 'day_of_week',
                     'required' => false,
                     'options' => [
                         'query' => [
-                            ['id' => 0, 'name' => $this->l('Domingo')],
-                            ['id' => 1, 'name' => $this->l('Lunes')],
-                            ['id' => 2, 'name' => $this->l('Martes')],
-                            ['id' => 3, 'name' => $this->l('Miércoles')],
-                            ['id' => 4, 'name' => $this->l('Jueves')],
-                            ['id' => 5, 'name' => $this->l('Viernes')],
-                            ['id' => 6, 'name' => $this->l('Sábado')],
+                            ['id' => 0, 'name' => $this->module->l('Domingo')],
+                            ['id' => 1, 'name' => $this->module->l('Lunes')],
+                            ['id' => 2, 'name' => $this->module->l('Martes')],
+                            ['id' => 3, 'name' => $this->module->l('Miércoles')],
+                            ['id' => 4, 'name' => $this->module->l('Jueves')],
+                            ['id' => 5, 'name' => $this->module->l('Viernes')],
+                            ['id' => 6, 'name' => $this->module->l('Sábado')],
                         ],
                         'id' => 'id',
                         'name' => 'name',
                     ],
                     'class' => 'field-day-week',
-                    'desc' => $this->l('Día de la semana para ejecución semanal'),
+                    'desc' => $this->module->l('Día de la semana para ejecución semanal'),
                 ],
                 [
                     'type' => 'text',
-                    'label' => $this->l('Día del mes'),
+                    'label' => $this->module->l('Día del mes'),
                     'name' => 'day_of_month',
                     'required' => false,
-                    'suffix' => $this->l('(1-31)'),
+                    'suffix' => $this->module->l('(1-31)'),
                     'class' => 'fixed-width-sm field-day-month',
-                    'desc' => $this->l('Día del mes para ejecución mensual o anual'),
+                    'desc' => $this->module->l('Día del mes para ejecución mensual o anual'),
                 ],
                 [
                     'type' => 'select',
-                    'label' => $this->l('Mes'),
+                    'label' => $this->module->l('Mes'),
                     'name' => 'month',
                     'required' => false,
                     'options' => [
                         'query' => [
-                            ['id' => 1, 'name' => $this->l('Enero')],
-                            ['id' => 2, 'name' => $this->l('Febrero')],
-                            ['id' => 3, 'name' => $this->l('Marzo')],
-                            ['id' => 4, 'name' => $this->l('Abril')],
-                            ['id' => 5, 'name' => $this->l('Mayo')],
-                            ['id' => 6, 'name' => $this->l('Junio')],
-                            ['id' => 7, 'name' => $this->l('Julio')],
-                            ['id' => 8, 'name' => $this->l('Agosto')],
-                            ['id' => 9, 'name' => $this->l('Septiembre')],
-                            ['id' => 10, 'name' => $this->l('Octubre')],
-                            ['id' => 11, 'name' => $this->l('Noviembre')],
-                            ['id' => 12, 'name' => $this->l('Diciembre')],
+                            ['id' => 1, 'name' => $this->module->l('Enero')],
+                            ['id' => 2, 'name' => $this->module->l('Febrero')],
+                            ['id' => 3, 'name' => $this->module->l('Marzo')],
+                            ['id' => 4, 'name' => $this->module->l('Abril')],
+                            ['id' => 5, 'name' => $this->module->l('Mayo')],
+                            ['id' => 6, 'name' => $this->module->l('Junio')],
+                            ['id' => 7, 'name' => $this->module->l('Julio')],
+                            ['id' => 8, 'name' => $this->module->l('Agosto')],
+                            ['id' => 9, 'name' => $this->module->l('Septiembre')],
+                            ['id' => 10, 'name' => $this->module->l('Octubre')],
+                            ['id' => 11, 'name' => $this->module->l('Noviembre')],
+                            ['id' => 12, 'name' => $this->module->l('Diciembre')],
                         ],
                         'id' => 'id',
                         'name' => 'name',
                     ],
                     'class' => 'field-month',
-                    'desc' => $this->l('Mes para ejecución anual'),
+                    'desc' => $this->module->l('Mes para ejecución anual'),
                 ],
                 [
                     'type' => 'switch',
-                    'label' => $this->l('Activo'),
+                    'label' => $this->module->l('Activo'),
                     'name' => 'active',
                     'is_bool' => true,
                     'values' => [
                         [
                             'id' => 'active_on',
                             'value' => 1,
-                            'label' => $this->l('Sí'),
+                            'label' => $this->module->l('Sí'),
                         ],
                         [
                             'id' => 'active_off',
                             'value' => 0,
-                            'label' => $this->l('No'),
+                            'label' => $this->module->l('No'),
                         ],
                     ],
                 ],
             ],
             'submit' => [
-                'title' => $this->l('Guardar'),
+                'title' => $this->module->l('Guardar'),
             ],
         ];
 
@@ -312,33 +314,33 @@ class AdminAccCronTaskController extends ModuleAdminController
     protected function getDayOfWeekOptions()
     {
         return [
-            ['id' => -1, 'name' => $this->l('Todos')],
-            ['id' => 0, 'name' => $this->l('Domingo')],
-            ['id' => 1, 'name' => $this->l('Lunes')],
-            ['id' => 2, 'name' => $this->l('Martes')],
-            ['id' => 3, 'name' => $this->l('Miércoles')],
-            ['id' => 4, 'name' => $this->l('Jueves')],
-            ['id' => 5, 'name' => $this->l('Viernes')],
-            ['id' => 6, 'name' => $this->l('Sábado')],
+            ['id' => -1, 'name' => $this->module->l('Todos')],
+            ['id' => 0, 'name' => $this->module->l('Domingo')],
+            ['id' => 1, 'name' => $this->module->l('Lunes')],
+            ['id' => 2, 'name' => $this->module->l('Martes')],
+            ['id' => 3, 'name' => $this->module->l('Miércoles')],
+            ['id' => 4, 'name' => $this->module->l('Jueves')],
+            ['id' => 5, 'name' => $this->module->l('Viernes')],
+            ['id' => 6, 'name' => $this->module->l('Sábado')],
         ];
     }
 
     protected function getMonthOptions()
     {
         return [
-            ['id' => -1, 'name' => $this->l('Todos')],
-            ['id' => 1, 'name' => $this->l('Enero')],
-            ['id' => 2, 'name' => $this->l('Febrero')],
-            ['id' => 3, 'name' => $this->l('Marzo')],
-            ['id' => 4, 'name' => $this->l('Abril')],
-            ['id' => 5, 'name' => $this->l('Mayo')],
-            ['id' => 6, 'name' => $this->l('Junio')],
-            ['id' => 7, 'name' => $this->l('Julio')],
-            ['id' => 8, 'name' => $this->l('Agosto')],
-            ['id' => 9, 'name' => $this->l('Septiembre')],
-            ['id' => 10, 'name' => $this->l('Octubre')],
-            ['id' => 11, 'name' => $this->l('Noviembre')],
-            ['id' => 12, 'name' => $this->l('Diciembre')],
+            ['id' => -1, 'name' => $this->module->l('Todos')],
+            ['id' => 1, 'name' => $this->module->l('Enero')],
+            ['id' => 2, 'name' => $this->module->l('Febrero')],
+            ['id' => 3, 'name' => $this->module->l('Marzo')],
+            ['id' => 4, 'name' => $this->module->l('Abril')],
+            ['id' => 5, 'name' => $this->module->l('Mayo')],
+            ['id' => 6, 'name' => $this->module->l('Junio')],
+            ['id' => 7, 'name' => $this->module->l('Julio')],
+            ['id' => 8, 'name' => $this->module->l('Agosto')],
+            ['id' => 9, 'name' => $this->module->l('Septiembre')],
+            ['id' => 10, 'name' => $this->module->l('Octubre')],
+            ['id' => 11, 'name' => $this->module->l('Noviembre')],
+            ['id' => 12, 'name' => $this->module->l('Diciembre')],
         ];
     }
 
@@ -350,7 +352,7 @@ class AdminAccCronTaskController extends ModuleAdminController
     public function getMonthDisplay($month, $row)
     {
         if ($month == -1) {
-            return $this->l('Todos');
+            return $this->module->l('Todos');
         }
         $months = $this->getMonthOptions();
         foreach ($months as $m) {
@@ -364,7 +366,7 @@ class AdminAccCronTaskController extends ModuleAdminController
     public function getDayOfWeekDisplay($day, $row)
     {
         if ($day == -1) {
-            return $this->l('Todos');
+            return $this->module->l('Todos');
         }
         $days = $this->getDayOfWeekOptions();
         foreach ($days as $d) {
@@ -392,7 +394,7 @@ class AdminAccCronTaskController extends ModuleAdminController
         if ($this->display == 'list' || $this->display == '') {
             $this->toolbar_btn['export'] = [
                 'href' => self::$currentIndex . '&action=generateCron&token=' . $this->token,
-                'desc' => $this->l('Generar comando Cron'),
+                'desc' => $this->module->l('Generar comando Cron'),
                 'icon' => 'process-icon-cogs',
             ];
         }
@@ -405,7 +407,7 @@ class AdminAccCronTaskController extends ModuleAdminController
         if ($this->display == 'list' || $this->display == '') {
             $this->page_header_toolbar_btn['export'] = [
                 'href' => self::$currentIndex . '&action=generateCron&token=' . $this->token,
-                'desc' => $this->l('Generar comando Cron'),
+                'desc' => $this->module->l('Generar comando Cron'),
                 'icon' => 'process-icon-cogs',
             ];
         }
@@ -451,7 +453,7 @@ class AdminAccCronTaskController extends ModuleAdminController
 
             // Validar minuto (siempre requerido)
             if ($minute < 0 || $minute > 59) {
-                $this->errors[] = $this->l('El minuto debe estar entre 0 y 59');
+                $this->errors[] = $this->module->l('El minuto debe estar entre 0 y 59');
                 return false;
             }
 
@@ -469,7 +471,7 @@ class AdminAccCronTaskController extends ModuleAdminController
                     // Hora y minutos requeridos
                     $hour = (int)$hour;
                     if ($hour < 0 || $hour > 23) {
-                        $this->errors[] = $this->l('La hora debe estar entre 0 y 23');
+                        $this->errors[] = $this->module->l('La hora debe estar entre 0 y 23');
                         return false;
                     }
                     $dayOfWeek = -1;
@@ -481,11 +483,11 @@ class AdminAccCronTaskController extends ModuleAdminController
                     // Día de la semana, hora y minutos requeridos
                     $hour = (int)$hour;
                     if ($hour < 0 || $hour > 23) {
-                        $this->errors[] = $this->l('La hora debe estar entre 0 y 23');
+                        $this->errors[] = $this->module->l('La hora debe estar entre 0 y 23');
                         return false;
                     }
                     if ($dayOfWeek == '' || $dayOfWeek == -1) {
-                        $this->errors[] = $this->l('Debe seleccionar un día de la semana');
+                        $this->errors[] = $this->module->l('Debe seleccionar un día de la semana');
                         return false;
                     }
                     $dayOfMonth = -1;
@@ -496,12 +498,12 @@ class AdminAccCronTaskController extends ModuleAdminController
                     // Hora, minutos y día del mes requeridos
                     $hour = (int)$hour;
                     if ($hour < 0 || $hour > 23) {
-                        $this->errors[] = $this->l('La hora debe estar entre 0 y 23');
+                        $this->errors[] = $this->module->l('La hora debe estar entre 0 y 23');
                         return false;
                     }
                     $dayOfMonth = (int)$dayOfMonth;
                     if ($dayOfMonth < 1 || $dayOfMonth > 31) {
-                        $this->errors[] = $this->l('El día del mes debe estar entre 1 y 31');
+                        $this->errors[] = $this->module->l('El día del mes debe estar entre 1 y 31');
                         return false;
                     }
                     $dayOfWeek = -1;
@@ -512,16 +514,16 @@ class AdminAccCronTaskController extends ModuleAdminController
                     // Día del mes, mes, hora y minutos requeridos
                     $hour = (int)$hour;
                     if ($hour < 0 || $hour > 23) {
-                        $this->errors[] = $this->l('La hora debe estar entre 0 y 23');
+                        $this->errors[] = $this->module->l('La hora debe estar entre 0 y 23');
                         return false;
                     }
                     $dayOfMonth = (int)$dayOfMonth;
                     if ($dayOfMonth < 1 || $dayOfMonth > 31) {
-                        $this->errors[] = $this->l('El día del mes debe estar entre 1 y 31');
+                        $this->errors[] = $this->module->l('El día del mes debe estar entre 1 y 31');
                         return false;
                     }
                     if ($month == '' || $month == -1) {
-                        $this->errors[] = $this->l('Debe seleccionar un mes');
+                        $this->errors[] = $this->module->l('Debe seleccionar un mes');
                         return false;
                     }
                     $dayOfWeek = -1;
