@@ -1,87 +1,91 @@
-# ACC Cron Task - Módulo de Gestión de Tareas Cron para PrestaShop
+# ACC Cron Task - Cron Task Management Module for PrestaShop
 
-## Descripción
+## Description
 
-Módulo para PrestaShop que permite gestionar tareas cron personalizadas con una interfaz moderna y actualizada. Compatible con PrestaShop 1.7, 8.x y 9.x.
+PrestaShop module that allows you to manage custom cron tasks with a modern and updated interface. Compatible with PrestaShop 1.7, 8.x and 9.x.
 
-## Características
+## Features
 
-- ✅ Interfaz moderna y actualizada
-- ✅ Gestión completa de tareas cron
-- ✅ Campos configurables: Nombre, URL, Frecuencia, Minutos (de 5 en 5), Día de la semana, Día del mes, Mes
-- ✅ Listado con todas las columnas: Nombre, URL, Hora, Minuto, Mes, Día de la semana, Última ejecución
-- ✅ Botones de acción: Activar/Desactivar, Modificar, Eliminar (en desplegable)
-- ✅ Generación automática de comando cron para el servidor
-- ✅ Compatible con PrestaShop 1.7, 8.x y 9.x
+- ✅ Modern and updated interface
+- ✅ Complete cron task management
+- ✅ Configurable fields: Name, URL, Frequency (Every hour, Daily, Weekly, Monthly, Yearly), Minute (0-59), Hour (0-23), Day of week, Day of month, Month
+- ✅ Listing with all columns: Name, URL, Hour, Minute, Month, Day of week, Last execution
+- ✅ Action buttons: Enable/Disable, Edit, Delete (in dropdown)
+- ✅ Automatic cron command generation for the server
+- ✅ Compatible with PrestaShop 1.7, 8.x and 9.x
 
-## Instalación
+## Installation
 
-1. Sube la carpeta `acccrontask` al directorio `modules/` de tu instalación de PrestaShop
-2. Ve al Back Office de PrestaShop
-3. Navega a Módulos > Gestor de módulos
-4. Busca "ACC Cron Task"
-5. Haz clic en "Instalar"
+1. Upload the `acccrontask` folder to the `modules/` directory of your PrestaShop installation
+2. Go to PrestaShop Back Office
+3. Navigate to Modules > Module Manager
+4. Search for "ACC Cron Task"
+5. Click on "Install"
 
-## Uso
+## Usage
 
-### Crear una nueva tarea cron
+### Create a new cron task
 
-1. Ve a Herramientas > ACC Cron Task
-2. Haz clic en "Añadir nueva tarea"
-3. Completa los campos:
-   - **Nombre**: Nombre descriptivo de la tarea
-   - **URL**: URL completa a ejecutar
-   - **Frecuencia día**: Diario, Semanal, Mensual, Anual o Personalizado
-   - **Minuto**: Selecciona el minuto (de 5 en 5)
-   - **Hora**: Hora de ejecución (0-23)
-   - **Día de la semana**: Opcional (dejar en "Todos" para todos los días)
-   - **Día del mes**: Opcional (1-31, -1 para todos)
-   - **Mes**: Opcional (dejar en "Todos" para todos los meses)
-   - **Activo**: Activar o desactivar la tarea
-4. Haz clic en "Guardar"
+1. Go to Tools > ACC Cron Task
+2. Click on "Add new task"
+3. Fill in the fields:
+   - **Name**: Descriptive name for the task
+   - **URL**: Complete URL to execute
+   - **Frequency**: Every hour, Daily, Weekly, Monthly, or Yearly
+   - **Minute**: Execution minute (0-59)
+   - **Hour**: Execution time (0-23)
+   - **Day of week**: Optional (select a specific day for weekly frequency, or leave empty for daily tasks)
+   - **Day of month**: Optional (1-31, required for monthly/yearly frequencies)
+   - **Month**: Optional (select a specific month for yearly frequency)
+   - **Active**: Enable or disable the task
+4. Click on "Save"
 
-### Generar comando Cron para el servidor
+### Generate Cron command for the server
 
-1. En el listado de tareas, haz clic en "Generar comando Cron"
-2. Copia el comando generado
-3. Añádelo a tu crontab del servidor usando `crontab -e`
+1. In the task list, click on "Generate Cron command"
+2. Copy the generated command
+3. Add it to your server crontab using `crontab -e`
 
-El comando generado tendrá el formato:
+The generated command will have the format:
 ```
-0 * * * * curl -k "https://tudominio.com/modules/acccrontask/controllers/front/cron.php?token=TOKEN"
+* * * * * curl -k "https://yourdomain.com/modules/acccrontask/controllers/front/cron.php?token=TOKEN"
 ```
 
-## Estructura del módulo
+**Note:** The command runs every minute. The module internally checks which tasks should be executed based on their configured schedule (hour, minute, day, month, etc.). The token in the URL is a fixed security token generated from your PrestaShop installation's secret key.
+
+## Module Structure
 
 ```
 acccrontask/
-├── acccrontask.php (Archivo principal del módulo)
+├── acccrontask.php (Main module file)
 ├── classes/
-│   └── AccCronTaskModel.php (Modelo de datos)
+│   └── AccCronTaskModel.php (Data model)
 ├── controllers/
 │   ├── admin/
-│   │   └── AdminAccCronTaskController.php (Controlador admin)
+│   │   └── AdminAccCronTaskController.php (Admin controller)
 │   └── front/
-│       └── cron.php (Controlador front para ejecución)
+│       └── cron.php (Front controller for execution)
 ├── views/
 │   └── templates/
 │       └── admin/
-│           ├── cron_command.tpl (Template para mostrar comando cron)
-│           └── list_override.tpl (Template personalizado del listado)
-└── index.php (Archivo de seguridad)
+│           ├── cron_command.tpl (Template to display cron command)
+│           ├── form_js.tpl (JavaScript for form behavior)
+│           ├── list_override.tpl (Custom listing template)
+│           └── list.tpl (Standard listing template)
+└── index.php (Security file)
 ```
 
-## Requisitos
+## Requirements
 
-- PrestaShop 1.7.0.0 o superior
-- PHP 7.1 o superior
-- Extensión cURL de PHP (para ejecutar las tareas cron)
+- PrestaShop 1.7.0.0 or higher
+- PHP 7.1 or higher
+- PHP cURL extension (to execute cron tasks)
 
-## Soporte
+## Support
 
-Para soporte o consultas, contacta con el desarrollador.
+For support or inquiries, contact the developer.
 
-## Licencia
+## License
 
 Academic Free License (AFL 3.0)
 
