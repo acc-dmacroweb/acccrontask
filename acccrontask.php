@@ -153,6 +153,7 @@ class AccCronTask extends Module
             `day_of_month` int(11) NOT NULL DEFAULT -1,
             `month` int(11) NOT NULL DEFAULT -1,
             `hour` int(11) NOT NULL DEFAULT 0,
+            `cron_unix_style` varchar(255) NULL,
             `active` tinyint(1) NOT NULL DEFAULT 1,
             `last_execution` datetime NULL,
             `date_add` datetime NOT NULL,
@@ -160,7 +161,50 @@ class AccCronTask extends Module
             PRIMARY KEY (`id_acccrontask`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
-        return Db::getInstance()->execute($sql);
+        $result = Db::getInstance()->execute($sql);
+        
+        // Agregar el campo cron_unix_style si la tabla ya existe (para actualizaciones)
+        $this->addCronUnixStyleColumnIfNotExists();
+        
+        return $result;
+    }
+    
+    /**
+     * Agrega la columna cron_unix_style si no existe (para actualizaciones)
+     */
+    public function addCronUnixStyleColumnIfNotExists()
+    {
+        $sql = 'SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'acccrontask` LIKE "cron_unix_style"';
+        $exists = Db::getInstance()->executeS($sql);
+        
+        if (empty($exists)) {
+            $sql = 'ALTER TABLE `' . _DB_PREFIX_ . 'acccrontask` 
+                    ADD COLUMN `cron_unix_style` varchar(255) NULL AFTER `hour`';
+            Db::getInstance()->execute($sql);
+            
+            // Generar cron_unix_style para tareas existentes
+            $this->generateCronUnixStyleForExistingTasks();
+        }
+    }
+    
+    /**
+     * Genera cron_unix_style para tareas existentes que no lo tengan
+     */
+    protected function generateCronUnixStyleForExistingTasks()
+    {
+        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'acccrontask` WHERE `cron_unix_style` IS NULL OR `cron_unix_style` = ""';
+        $tasks = Db::getInstance()->executeS($sql);
+        
+        if ($tasks) {
+            foreach ($tasks as $taskData) {
+                $task = new AccCronTaskModel((int)$taskData['id_acccrontask']);
+                if (Validate::isLoadedObject($task)) {
+                    $cronStyle = $task->generateCronUnixStyle();
+                    $task->cron_unix_style = $cronStyle;
+                    $task->update();
+                }
+            }
+        }
     }
 
     protected function uninstallDb()
@@ -255,6 +299,9 @@ class AccCronTask extends Module
 
     public function getContent()
     {
+        // Asegurar que la columna cron_unix_style existe (para módulos ya instalados)
+        $this->addCronUnixStyleColumnIfNotExists();
+        
         // Solo actualizar Tab para PS 9.0+ (donde route_name es obligatorio)
         // PS 1.7 y PS 8 funcionan sin route_name
         if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {

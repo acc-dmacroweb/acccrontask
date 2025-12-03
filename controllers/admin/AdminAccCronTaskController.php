@@ -43,6 +43,11 @@ class AdminAccCronTaskController extends ModuleAdminController
         if (!$this->module) {
             $this->module = Module::getInstanceByName('acccrontask');
         }
+        
+        // Asegurar que la columna cron_unix_style existe en la base de datos
+        if ($this->module) {
+            $this->module->addCronUnixStyleColumnIfNotExists();
+        }
 
         $this->fields_list = [
             'name' => [
@@ -55,6 +60,19 @@ class AdminAccCronTaskController extends ModuleAdminController
                 'width' => 'auto',
                 'callback' => 'getUrlDisplay',
                 'filter_key' => 'a!url',
+            ],
+            'frequency_day' => [
+                'title' => $this->module->l('Frecuencia'),
+                'width' => 'auto',
+                'align' => 'center',
+                'callback' => 'getFrequencyDisplay',
+            ],
+            'cron_unix_style' => [
+                'title' => $this->module->l('Cron Unix Style'),
+                'width' => 'auto',
+                'align' => 'center',
+                'callback' => 'getCronUnixStyleDisplay',
+                'orderby' => false,
             ],
             'hour' => [
                 'title' => $this->module->l('Hora'),
@@ -102,6 +120,9 @@ class AdminAccCronTaskController extends ModuleAdminController
                 'confirm' => $this->module->l('¿Eliminar los elementos seleccionados?'),
             ],
         ];
+        
+        // Configurar acción personalizada "ejecutar ahora"
+        $this->actions = ['edit', 'delete', 'executeNow'];
     }
 
     public function initContent()
@@ -121,6 +142,7 @@ class AdminAccCronTaskController extends ModuleAdminController
     {
         $this->addRowAction('edit');
         $this->addRowAction('delete');
+        $this->addRowAction('executeNow');
 
         $this->toolbar_btn['new'] = [
             'href' => self::$currentIndex . '&add' . $this->table . '&token=' . $this->token,
@@ -181,6 +203,7 @@ class AdminAccCronTaskController extends ModuleAdminController
                             ['id' => 1, 'name' => $this->module->l('Semanal')],
                             ['id' => 2, 'name' => $this->module->l('Mensual')],
                             ['id' => 3, 'name' => $this->module->l('Anual')],
+                            ['id' => 6, 'name' => $this->module->l('Cron Unix Style')],
                         ],
                         'id' => 'id',
                         'name' => 'name',
@@ -260,6 +283,14 @@ class AdminAccCronTaskController extends ModuleAdminController
                     ],
                     'class' => 'field-month',
                     'desc' => $this->module->l('Mes para ejecución anual'),
+                ],
+                [
+                    'type' => 'text',
+                    'label' => $this->module->l('Cron Unix Style'),
+                    'name' => 'cron_unix_style',
+                    'required' => false,
+                    'desc' => $this->module->l('Formato cron unix style: minuto hora día_mes mes día_semana. Ejemplos: "0 2 * * *" (diario a las 2:00), "*/5 * * * *" (cada 5 minutos), "0 0 1 * *" (mensual el día 1)'),
+                    'class' => 'field-cron-unix-style',
                 ],
                 [
                     'type' => 'switch',
@@ -377,12 +408,198 @@ class AdminAccCronTaskController extends ModuleAdminController
         return $day;
     }
 
+    public function getFrequencyDisplay($frequency, $row)
+    {
+        $frequencies = [
+            5 => $this->module->l('Cada hora'),
+            0 => $this->module->l('Diario'),
+            1 => $this->module->l('Semanal'),
+            2 => $this->module->l('Mensual'),
+            3 => $this->module->l('Anual'),
+            6 => $this->module->l('Cron Unix Style'),
+        ];
+        
+        return isset($frequencies[$frequency]) ? $frequencies[$frequency] : $frequency;
+    }
+
+    public function getCronUnixStyleDisplay($cronStyle, $row)
+    {
+        // Solo mostrar si frequency_day = 6 (Cron Unix Style)
+        $frequencyDay = isset($row['frequency_day']) ? (int)$row['frequency_day'] : 0;
+        if ($frequencyDay != 6) {
+            return '-';
+        }
+
+        if (empty($cronStyle)) {
+            return '-';
+        }
+
+        $parts = preg_split('/\s+/', trim($cronStyle));
+        if (count($parts) != 5) {
+            return $cronStyle;
+        }
+
+        $minute = $parts[0];
+        $hour = $parts[1];
+        $dayOfMonth = $parts[2];
+        $month = $parts[3];
+        $dayOfWeek = $parts[4];
+
+        $description = '';
+
+        // Días de la semana traducidos
+        $days = [
+            $this->module->l('Domingo'),
+            $this->module->l('Lunes'),
+            $this->module->l('Martes'),
+            $this->module->l('Miércoles'),
+            $this->module->l('Jueves'),
+            $this->module->l('Viernes'),
+            $this->module->l('Sábado')
+        ];
+
+        // Meses traducidos
+        $months = [
+            '',
+            $this->module->l('Enero'),
+            $this->module->l('Febrero'),
+            $this->module->l('Marzo'),
+            $this->module->l('Abril'),
+            $this->module->l('Mayo'),
+            $this->module->l('Junio'),
+            $this->module->l('Julio'),
+            $this->module->l('Agosto'),
+            $this->module->l('Septiembre'),
+            $this->module->l('Octubre'),
+            $this->module->l('Noviembre'),
+            $this->module->l('Diciembre')
+        ];
+
+        // Interpretar minuto
+        if ($minute === '*') {
+            $minuteDesc = $this->module->l('cada minuto');
+        } elseif (preg_match('/^\*\/(\d+)$/', $minute, $matches)) {
+            $interval = (int)$matches[1];
+            if ($interval == 1) {
+                $minuteDesc = $this->module->l('cada minuto');
+            } else {
+                $minuteDesc = sprintf($this->module->l('cada %d minutos'), $interval);
+            }
+        } elseif (strpos($minute, ',') !== false) {
+            $minuteDesc = $this->module->l('minutos') . ' ' . str_replace(',', ', ', $minute);
+        } elseif (strpos($minute, '-') !== false) {
+            $minuteDesc = $this->module->l('minutos') . ' ' . $minute;
+        } else {
+            $minuteDesc = sprintf($this->module->l('minuto %s'), $minute);
+        }
+
+        // Interpretar hora
+        if ($hour === '*') {
+            $hourDesc = '';
+        } elseif (preg_match('/^\*\/(\d+)$/', $hour, $matches)) {
+            $interval = (int)$matches[1];
+            $hourDesc = sprintf($this->module->l('cada %d horas'), $interval);
+        } elseif (strpos($hour, ',') !== false) {
+            $hourDesc = $this->module->l('horas') . ' ' . str_replace(',', ', ', $hour);
+        } elseif (strpos($hour, '-') !== false) {
+            $hourDesc = $this->module->l('horas') . ' ' . $hour;
+        } else {
+            $hourDesc = sprintf($this->module->l('hora %s'), $hour);
+        }
+
+        // Construir descripción
+        if ($minute === '*' && $hour === '*' && $dayOfMonth === '*' && $month === '*' && $dayOfWeek === '*') {
+            $description = $this->module->l('Cada minuto');
+        } elseif ($minute !== '*' && $hour === '*' && $dayOfMonth === '*' && $month === '*' && $dayOfWeek === '*') {
+            // Solo minuto específico
+            if (preg_match('/^\*\/(\d+)$/', $minute, $matches)) {
+                if ($matches[1] == 1) {
+                    $description = $this->module->l('Cada minuto');
+                } else {
+                    $description = sprintf($this->module->l('Cada %d minutos'), (int)$matches[1]);
+                }
+            } else {
+                $description = sprintf($this->module->l('Cada hora en el minuto %s'), $minute);
+            }
+        } elseif ($minute !== '*' && $hour !== '*' && $dayOfMonth === '*' && $month === '*' && $dayOfWeek === '*') {
+            // Hora y minuto específicos - diario
+            $description = sprintf($this->module->l('Diario a las %s:%s'), $hour, $minute);
+        } elseif ($minute !== '*' && $hour !== '*' && $dayOfMonth === '*' && $month === '*' && $dayOfWeek !== '*') {
+            // Semanal
+            if (strpos($dayOfWeek, ',') !== false) {
+                $dayNums = explode(',', $dayOfWeek);
+                $dayNames = [];
+                foreach ($dayNums as $d) {
+                    $dayIndex = (int)trim($d);
+                    if (isset($days[$dayIndex])) {
+                        $dayNames[] = $days[$dayIndex];
+                    }
+                }
+                $description = sprintf(
+                    $this->module->l('Semanal: %s a las %s:%s'),
+                    implode(', ', $dayNames),
+                    $hour,
+                    $minute
+                );
+            } else {
+                $dayIndex = (int)$dayOfWeek;
+                $dayName = isset($days[$dayIndex]) ? $days[$dayIndex] : sprintf($this->module->l('día %s'), $dayOfWeek);
+                $description = sprintf($this->module->l('Cada %s a las %s:%s'), $dayName, $hour, $minute);
+            }
+        } elseif ($minute !== '*' && $hour !== '*' && $dayOfMonth !== '*' && $month === '*' && $dayOfWeek === '*') {
+            // Mensual
+            if ($dayOfMonth === '*') {
+                $description = sprintf($this->module->l('Mensual a las %s:%s'), $hour, $minute);
+            } else {
+                $description = sprintf($this->module->l('Día %s de cada mes a las %s:%s'), $dayOfMonth, $hour, $minute);
+            }
+        } elseif ($minute !== '*' && $hour !== '*' && $dayOfMonth !== '*' && $month !== '*' && $dayOfWeek === '*') {
+            // Anual
+            $monthIndex = (int)$month;
+            $monthName = isset($months[$monthIndex]) ? $months[$monthIndex] : sprintf($this->module->l('mes %s'), $month);
+            $description = sprintf($this->module->l('Anual: día %s de %s a las %s:%s'), $dayOfMonth, $monthName, $hour, $minute);
+        } else {
+            // Formato complejo - mostrar resumen
+            $description = $minuteDesc;
+            if ($hourDesc) {
+                $description .= ', ' . $hourDesc;
+            }
+            if ($dayOfMonth !== '*') {
+                $description .= ', ' . sprintf($this->module->l('día %s'), $dayOfMonth);
+            }
+            if ($month !== '*') {
+                $description .= ', ' . sprintf($this->module->l('mes %s'), $month);
+            }
+            if ($dayOfWeek !== '*') {
+                $description .= ', ' . sprintf($this->module->l('día semana %s'), $dayOfWeek);
+            }
+        }
+
+        return '<span>' . $description . '</span>';
+    }
+
     public function processStatus()
     {
         $cron = new AccCronTaskModel((int)Tools::getValue($this->identifier));
         if (Validate::isLoadedObject($cron)) {
             $cron->active = !$cron->active;
             $cron->save();
+        }
+        Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
+    }
+
+    public function processExecuteNow()
+    {
+        $cron = new AccCronTaskModel((int)Tools::getValue($this->identifier));
+        if (Validate::isLoadedObject($cron)) {
+            $result = $cron->executeNow();
+            if ($result) {
+                $this->confirmations[] = $this->module->l('Tarea ejecutada correctamente');
+            } else {
+                $this->errors[] = $this->module->l('Error al ejecutar la tarea');
+            }
+        } else {
+            $this->errors[] = $this->module->l('Tarea no encontrada');
         }
         Tools::redirectAdmin(self::$currentIndex . '&token=' . $this->token);
     }
@@ -461,22 +678,47 @@ class AdminAccCronTaskController extends ModuleAdminController
 
     public function postProcess()
     {
-        if (Tools::isSubmit('submitAdd' . $this->table)) {
+        // Verificar todos los posibles submits (añadir, actualizar, guardar y continuar, etc.)
+        $isSubmitting = Tools::isSubmit('submitAdd' . $this->table) || 
+                       Tools::isSubmit('submitAdd' . $this->table . 'AndStay') ||
+                       isset($_POST['submitAdd' . $this->table]) ||
+                       isset($_POST['submitAdd' . $this->table . 'AndStay']);
+        
+        if ($isSubmitting) {
             $frequencyDay = (int)Tools::getValue('frequency_day');
             $hour = Tools::getValue('hour');
             $minute = (int)Tools::getValue('minute');
             $dayOfWeek = Tools::getValue('day_of_week');
             $dayOfMonth = Tools::getValue('day_of_month');
             $month = Tools::getValue('month');
+            $cronUnixStyle = trim(Tools::getValue('cron_unix_style'));
 
-            // Validar minuto (siempre requerido)
-            if ($minute < 0 || $minute > 59) {
+            // Validar minuto (siempre requerido, excepto para Cron Unix Style)
+            if ($frequencyDay != 6 && ($minute < 0 || $minute > 59)) {
                 $this->errors[] = $this->module->l('El minuto debe estar entre 0 y 59');
                 return false;
             }
 
             // Validar según la frecuencia
             switch ($frequencyDay) {
+                case 6: // Cron Unix Style
+                    // Solo cron_unix_style es requerido
+                    if (empty($cronUnixStyle)) {
+                        $this->errors[] = $this->module->l('Debe ingresar un formato cron unix style');
+                        return false;
+                    }
+                    if (!AccCronTaskModel::validateCronUnixStyle($cronUnixStyle)) {
+                        $this->errors[] = $this->module->l('El formato cron unix style no es válido. Debe ser: minuto hora día_mes mes día_semana. Ejemplo: "0 2 * * *"');
+                        return false;
+                    }
+                    // Limpiar otros campos
+                    $hour = 0;
+                    $minute = 0;
+                    $dayOfWeek = -1;
+                    $dayOfMonth = -1;
+                    $month = -1;
+                    break;
+                    
                 case 5: // Cada hora
                     // Solo minutos, hora se ignora
                     $hour = 0;
@@ -547,14 +789,36 @@ class AdminAccCronTaskController extends ModuleAdminController
                     $dayOfWeek = -1;
                     break;
             }
-
+            
+            // Guardar valores
             $_POST['hour'] = $hour;
             $_POST['minute'] = $minute;
             $_POST['day_of_week'] = (int)$dayOfWeek;
             $_POST['day_of_month'] = (int)$dayOfMonth;
             $_POST['month'] = (int)$month;
+            
+            // SIEMPRE generar cron_unix_style basándose en los campos individuales seleccionados
+            // Crear un objeto temporal para generar el cron_unix_style
+            $tempTask = new AccCronTaskModel();
+            $tempTask->frequency_day = $frequencyDay;
+            $tempTask->hour = (int)$hour;
+            $tempTask->minute = (int)$minute;
+            $tempTask->day_of_week = (int)$dayOfWeek;
+            $tempTask->day_of_month = (int)$dayOfMonth;
+            $tempTask->month = (int)$month;
+            
+            // Si es frecuencia 6 (Cron Unix Style) y el usuario ingresó un valor válido, usarlo temporalmente
+            // para que generateCronUnixStyle() pueda usarlo si no hay campos individuales válidos
+            if ($frequencyDay == 6 && !empty($cronUnixStyle) && AccCronTaskModel::validateCronUnixStyle($cronUnixStyle)) {
+                $tempTask->cron_unix_style = $cronUnixStyle;
+            }
+            
+            // SIEMPRE generar el cron_unix_style basándose en los campos individuales
+            $generatedCron = $tempTask->generateCronUnixStyle();
+            $_POST['cron_unix_style'] = $generatedCron;
         }
 
+        // Procesar con el método padre (ahora incluirá el cron_unix_style actualizado)
         return parent::postProcess();
     }
 }
