@@ -133,6 +133,12 @@ class AdminAccCronTaskController extends ModuleAdminController
             return;
         }
         
+        // Registrar CSS y JS para el listado
+        if ($this->display == 'list' || $this->display == '') {
+            $this->addCSS($this->module->getPathUri() . 'views/css/list.css');
+            $this->addJS($this->module->getPathUri() . 'views/js/list.js');
+        }
+        
         // Ya no necesitamos regenerar token, usamos el de AdminModules
 
         parent::initContent();
@@ -162,6 +168,7 @@ class AdminAccCronTaskController extends ModuleAdminController
             'token' => $this->token,
             'current_index' => self::$currentIndex,
             'controller' => 'AdminAccCronTask',
+            'module_dir' => $this->module->getPathUri(),
         ]);
 
         return $this->context->smarty->fetch(

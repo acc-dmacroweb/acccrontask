@@ -1,0 +1,184 @@
+/* Contenedor responsive para la tabla */
+.acccrontask-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.acccrontask-table-wrapper table {
+    min-width: 600px;
+}
+
+/* Estilos Bootstrap 5 para los botones de acción - responsive */
+.acccrontask-actions {
+    display: inline-flex;
+    gap: 0.25rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.acccrontask-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    text-transform: initial !important;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    min-height: 28px;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    flex-shrink: 0;
+}
+
+.acccrontask-actions .btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075), 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.acccrontask-actions .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.acccrontask-actions .btn-primary {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.acccrontask-actions .btn-primary:hover {
+    color: #fff;
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.acccrontask-actions .btn-success {
+    color: #fff;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.acccrontask-actions .btn-success:hover {
+    color: #fff;
+    background-color: #157347;
+    border-color: #146c43;
+}
+
+.acccrontask-actions .btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.acccrontask-actions .btn-danger:hover {
+    color: #fff;
+    background-color: #bb2d3b;
+    border-color: #b02a37;
+}
+
+.acccrontask-actions .btn i {
+    font-size: 0.75rem;
+    line-height: 1;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.acccrontask-actions .btn span {
+    font-size: 0.75rem;
+}
+
+/* Responsive: En pantallas pequeñas, ocultar texto y solo mostrar iconos */
+@media (max-width: 768px) {
+    .acccrontask-actions .btn span {
+        display: none;
+    }
+    
+    .acccrontask-actions .btn {
+        padding: 0.25rem;
+        min-width: 32px;
+        width: 32px;
+    }
+    
+    .acccrontask-table-wrapper {
+        margin-left: -15px;
+        margin-right: -15px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Ajustar columnas de la tabla en móviles */
+    .acccrontask-table-wrapper table td,
+    .acccrontask-table-wrapper table th {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Ocultar algunas columnas menos importantes en móviles */
+    .acccrontask-table-wrapper table th:nth-child(3),
+    .acccrontask-table-wrapper table td:nth-child(3),
+    .acccrontask-table-wrapper table th:nth-child(4),
+    .acccrontask-table-wrapper table td:nth-child(4) {
+        display: none;
+    }
+}
+
+/* Pantallas muy pequeñas (móviles pequeños) */
+@media (max-width: 480px) {
+    .acccrontask-actions {
+        gap: 0.15rem;
+    }
+    
+    .acccrontask-actions .btn {
+        min-width: 28px;
+        width: 28px;
+        padding: 0.2rem;
+    }
+    
+    .acccrontask-actions .btn i {
+        font-size: 0.7rem;
+    }
+    
+    /* Ocultar más columnas en pantallas muy pequeñas */
+    .acccrontask-table-wrapper table th:nth-child(5),
+    .acccrontask-table-wrapper table td:nth-child(5),
+    .acccrontask-table-wrapper table th:nth-child(6),
+    .acccrontask-table-wrapper table td:nth-child(6),
+    .acccrontask-table-wrapper table th:nth-child(7),
+    .acccrontask-table-wrapper table td:nth-child(7),
+    .acccrontask-table-wrapper table th:nth-child(8),
+    .acccrontask-table-wrapper table td:nth-child(8) {
+        display: none;
+    }
+}
+
+/* Asegurar que las celdas de acciones no se corten */
+.acccrontask-table-wrapper table td:last-child {
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+@media (max-width: 768px) {
+    .acccrontask-table-wrapper table td:last-child {
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .acccrontask-table-wrapper table td:last-child {
+        min-width: 90px;
+    }
+}
+
