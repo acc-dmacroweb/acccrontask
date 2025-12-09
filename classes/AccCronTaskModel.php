@@ -66,7 +66,7 @@ class AccCronTaskModel extends ObjectModel
     ];
 
     /**
-     * Obtiene todas las tareas cron activas
+     * Gets all active cron tasks
      * @return array
      */
     public static function getActiveCronJobs()
@@ -79,7 +79,7 @@ class AccCronTaskModel extends ObjectModel
     }
 
     /**
-     * Verifica si la tarea debe ejecutarse ahora
+     * Checks if the task should be executed now
      * @return bool
      */
     public function shouldExecute()
@@ -91,31 +91,31 @@ class AccCronTaskModel extends ObjectModel
         $now = time();
         $currentTime = getdate($now);
         
-        // Si hay last_execution, calcular si ha pasado el tiempo suficiente según la frecuencia
+        // If there's last_execution, calculate if enough time has passed according to frequency
         if (!empty($this->last_execution)) {
             $lastExecutionTimestamp = strtotime($this->last_execution);
             if ($lastExecutionTimestamp === false) {
                 return false;
             }
             
-            // Calcular el tiempo transcurrido desde la última ejecución
+            // Calculate time elapsed since last execution
             $timeSinceLastExecution = $now - $lastExecutionTimestamp;
             
-            // Verificar según la frecuencia
+            // Check according to frequency
             switch ($this->frequency_day) {
-                case 5: // Cada hora
-                    // Ejecutar si han pasado al menos 60 minutos desde la última ejecución
+                case 5: // Every hour
+                    // Execute if at least 60 minutes have passed since last execution
                     return $timeSinceLastExecution >= 3600;
                     
-                case 0: // Diario
-                    // Ejecutar si han pasado al menos 24 horas y es la hora/minuto configurada
+                case 0: // Daily
+                    // Execute if at least 24 hours have passed and it's the configured hour/minute
                     if ($timeSinceLastExecution >= 86400) {
                         return ($currentTime['hours'] == $this->hour && $currentTime['minutes'] == $this->minute);
                     }
                     return false;
                     
-                case 1: // Semanal
-                    // Ejecutar si han pasado al menos 7 días y es el día/hora/minuto configurado
+                case 1: // Weekly
+                    // Execute if at least 7 days have passed and it's the configured day/hour/minute
                     if ($timeSinceLastExecution >= 604800) {
                         return ($currentTime['wday'] == $this->day_of_week && 
                                 $currentTime['hours'] == $this->hour && 
@@ -123,29 +123,29 @@ class AccCronTaskModel extends ObjectModel
                     }
                     return false;
                     
-                case 2: // Mensual
-                    // Ejecutar si es el día del mes configurado y la hora/minuto
+                case 2: // Monthly
+                    // Execute if it's the configured day of month and hour/minute
                     if ($currentTime['mday'] == $this->day_of_month && 
                         $currentTime['hours'] == $this->hour && 
                         $currentTime['minutes'] == $this->minute) {
-                        // Verificar que hayan pasado al menos 30 días desde la última ejecución
-                        return $timeSinceLastExecution >= 2592000; // 30 días
+                        // Check that at least 30 days have passed since last execution
+                        return $timeSinceLastExecution >= 2592000; // 30 days
                     }
                     return false;
                     
-                case 3: // Anual
-                    // Ejecutar si es el mes/día/hora/minuto configurado
+                case 3: // Yearly
+                    // Execute if it's the configured month/day/hour/minute
                     if ($currentTime['mon'] == $this->month && 
                         $currentTime['mday'] == $this->day_of_month && 
                         $currentTime['hours'] == $this->hour && 
                         $currentTime['minutes'] == $this->minute) {
-                        // Verificar que hayan pasado al menos 365 días desde la última ejecución
-                        return $timeSinceLastExecution >= 31536000; // 365 días
+                        // Check that at least 365 days have passed since last execution
+                        return $timeSinceLastExecution >= 31536000; // 365 days
                     }
                     return false;
                     
                 case 6: // Cron Unix Style
-                    // Para cron unix style, verificar si el tiempo actual coincide con el patrón
+                    // For cron unix style, check if current time matches the pattern
                     if (empty($this->cron_unix_style) || !self::validateCronUnixStyle($this->cron_unix_style)) {
                         return false;
                     }
@@ -155,37 +155,37 @@ class AccCronTaskModel extends ObjectModel
                         return false;
                     }
                     
-                    // Verificar si el tiempo actual coincide con el patrón cron
+                    // Check if current time matches cron pattern
                     return ($this->matchesCronField($parts[0], $currentTime['minutes'], 0, 59) &&
                             $this->matchesCronField($parts[1], $currentTime['hours'], 0, 23) &&
                             $this->matchesCronField($parts[2], $currentTime['mday'], 1, 31) &&
                             $this->matchesCronField($parts[3], $currentTime['mon'], 1, 12) &&
                             $this->matchesCronField($parts[4], $currentTime['wday'], 0, 6) &&
-                            $timeSinceLastExecution >= 60); // Al menos 1 minuto desde la última ejecución
+                            $timeSinceLastExecution >= 60); // At least 1 minute since last execution
                     
                 default:
                     return false;
             }
         } else {
-            // Si no hay last_execution, ejecutar si coincide con la configuración actual
+            // If there's no last_execution, execute if it matches current configuration
             switch ($this->frequency_day) {
-                case 5: // Cada hora
+                case 5: // Every hour
                     return ($currentTime['minutes'] == $this->minute);
                     
-                case 0: // Diario
+                case 0: // Daily
                     return ($currentTime['hours'] == $this->hour && $currentTime['minutes'] == $this->minute);
                     
-                case 1: // Semanal
+                case 1: // Weekly
                     return ($currentTime['wday'] == $this->day_of_week && 
                             $currentTime['hours'] == $this->hour && 
                             $currentTime['minutes'] == $this->minute);
                     
-                case 2: // Mensual
+                case 2: // Monthly
                     return ($currentTime['mday'] == $this->day_of_month && 
                             $currentTime['hours'] == $this->hour && 
                             $currentTime['minutes'] == $this->minute);
                     
-                case 3: // Anual
+                case 3: // Yearly
                     return ($currentTime['mon'] == $this->month && 
                             $currentTime['mday'] == $this->day_of_month && 
                             $currentTime['hours'] == $this->hour && 
@@ -214,7 +214,7 @@ class AccCronTaskModel extends ObjectModel
     }
 
     /**
-     * Ejecuta la tarea
+     * Executes the task
      * @return bool
      */
     public function execute()
@@ -241,12 +241,12 @@ class AccCronTaskModel extends ObjectModel
     }
 
     /**
-     * Ejecuta la tarea manualmente sin verificar shouldExecute() ni si está activa
-     * Siempre ejecuta y registra la hora de ejecución
+     * Executes the task manually without checking shouldExecute() or if it's active
+     * Always executes and records execution time
      */
     public function executeNow()
     {
-        // Ejecutar siempre, sin importar si está activa o no
+        // Always execute, regardless of whether it's active or not
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -259,31 +259,31 @@ class AccCronTaskModel extends ObjectModel
         $curlError = curl_error($ch);
         curl_close($ch);
 
-        // SIEMPRE registrar la hora de ejecución, independientemente del resultado
+        // ALWAYS record execution time, regardless of result
         $this->last_execution = date('Y-m-d H:i:s');
         $this->update();
 
-        // Retornar true si la ejecución fue exitosa (código 200), false en caso contrario
+        // Return true if execution was successful (code 200), false otherwise
         return $httpCode == 200 && empty($curlError);
     }
 
     /**
-     * Calcula la próxima ejecución basada en cron_unix_style
-     * @return int|false Timestamp de la próxima ejecución o false si no se puede calcular
+     * Calculates next execution based on cron_unix_style
+     * @return int|false Timestamp of next execution or false if cannot be calculated
      */
    
 
     /**
-     * Calcula la próxima ejecución desde los campos individuales (fallback)
+     * Calculates next execution from individual fields (fallback)
      */
     
 
     /**
-     * Verifica si un valor coincide con un campo cron
-     * @param string $field Campo cron (ej: "*", "5", "*\/10", "1-5")
-     * @param int $value Valor a verificar
-     * @param int $min Valor mínimo
-     * @param int $max Valor máximo
+     * Checks if a value matches a cron field
+     * @param string $field Cron field (e.g: "*", "5", "*\/10", "1-5")
+     * @param int $value Value to check
+     * @param int $min Minimum value
+     * @param int $max Maximum value
      * @return bool
      */
     protected function matchesCronField($field, $value, $min, $max)
@@ -292,20 +292,20 @@ class AccCronTaskModel extends ObjectModel
             return true;
         }
 
-        // Rango: 1-5
+        // Range: 1-5
         if (preg_match('/^(\d+)-(\d+)$/', $field, $matches)) {
             $start = (int)$matches[1];
             $end = (int)$matches[2];
             return $value >= $start && $value <= $end;
         }
 
-        // Intervalo: */10
+        // Interval: */10
         if (preg_match('/^\*\/(\d+)$/', $field, $matches)) {
             $interval = (int)$matches[1];
             return ($value % $interval) == 0;
         }
 
-        // Lista: 1,3,5
+        // List: 1,3,5
         if (strpos($field, ',') !== false) {
             $values = explode(',', $field);
             foreach ($values as $v) {
@@ -316,39 +316,39 @@ class AccCronTaskModel extends ObjectModel
             return false;
         }
 
-        // Valor único
+        // Single value
         return (int)$field == $value;
     }
 
     /**
-     * Genera el formato cron unix style desde los campos individuales
+     * Generates unix style cron format from individual fields
      * @return string
      */
     public function generateCronUnixStyle()
     {
         switch ($this->frequency_day) {
-            case 5: // Cada hora
+            case 5: // Every hour
                 return $this->minute . ' * * * *';
                 
-            case 0: // Diario
+            case 0: // Daily
                 return $this->minute . ' ' . $this->hour . ' * * *';
                 
-            case 1: // Semanal
+            case 1: // Weekly
                 return $this->minute . ' ' . $this->hour . ' * * ' . $this->day_of_week;
                 
-            case 2: // Mensual
+            case 2: // Monthly
                 return $this->minute . ' ' . $this->hour . ' ' . $this->day_of_month . ' * *';
                 
-            case 3: // Anual
+            case 3: // Yearly
                 return $this->minute . ' ' . $this->hour . ' ' . $this->day_of_month . ' ' . $this->month . ' *';
                 
-            case 6: // Cron Unix Style - si hay un valor válido, usarlo; si no, generar desde campos
-                // Si hay un cron_unix_style válido, usarlo
+            case 6: // Cron Unix Style - if there's a valid value, use it; if not, generate from fields
+                // If there's a valid cron_unix_style, use it
                 if (!empty($this->cron_unix_style) && self::validateCronUnixStyle($this->cron_unix_style)) {
                     return $this->cron_unix_style;
                 }
-                // Si no, generar desde los campos individuales (aunque normalmente estarán en -1)
-                // Si los campos están en valores válidos, generar desde ellos
+                // If not, generate from individual fields (though they'll normally be -1)
+                // If fields have valid values, generate from them
                 if ($this->day_of_month != -1 && $this->month != -1) {
                     return $this->minute . ' ' . $this->hour . ' ' . $this->day_of_month . ' ' . $this->month . ' *';
                 } elseif ($this->day_of_month != -1) {
@@ -367,8 +367,8 @@ class AccCronTaskModel extends ObjectModel
     }
 
     /**
-     * Valida el formato cron unix style
-     * @param string $cronStyle Formato cron a validar
+     * Validates unix style cron format
+     * @param string $cronStyle Cron format to validate
      * @return bool
      */
     public static function validateCronUnixStyle($cronStyle)
@@ -382,13 +382,13 @@ class AccCronTaskModel extends ObjectModel
             return false;
         }
 
-        // Validar cada parte
+        // Validate each part
         $ranges = [
-            [0, 59],   // minuto
-            [0, 23],   // hora
-            [1, 31],   // día del mes
-            [1, 12],   // mes
-            [0, 6],    // día de la semana
+            [0, 59],   // minute
+            [0, 23],   // hour
+            [1, 31],   // day of month
+            [1, 12],   // month
+            [0, 6],    // day of week
         ];
 
         foreach ($parts as $index => $part) {
@@ -396,7 +396,7 @@ class AccCronTaskModel extends ObjectModel
                 continue;
             }
 
-            // Rango: 1-5
+            // Range: 1-5
             if (preg_match('/^(\d+)-(\d+)$/', $part, $matches)) {
                 $start = (int)$matches[1];
                 $end = (int)$matches[2];
@@ -406,7 +406,7 @@ class AccCronTaskModel extends ObjectModel
                 continue;
             }
 
-            // Intervalo: */10
+            // Interval: */10
             if (preg_match('/^\*\/(\d+)$/', $part, $matches)) {
                 $interval = (int)$matches[1];
                 if ($interval < 1 || $interval > $ranges[$index][1]) {
@@ -415,7 +415,7 @@ class AccCronTaskModel extends ObjectModel
                 continue;
             }
 
-            // Lista: 1,3,5
+            // List: 1,3,5
             if (strpos($part, ',') !== false) {
                 $values = explode(',', $part);
                 foreach ($values as $v) {
@@ -427,7 +427,7 @@ class AccCronTaskModel extends ObjectModel
                 continue;
             }
 
-            // Valor único
+            // Single value
             $val = (int)$part;
             if ($val < $ranges[$index][0] || $val > $ranges[$index][1]) {
                 return false;
@@ -438,7 +438,7 @@ class AccCronTaskModel extends ObjectModel
     }
 
     /**
-     * Asigna valores por defecto antes de agregar
+     * Sets default values before adding
      */
     public function add($autoDate = true, $nullValues = false)
     {
@@ -447,30 +447,30 @@ class AccCronTaskModel extends ObjectModel
             $this->date_upd = date('Y-m-d H:i:s');
         }
 
-        // Si last_execution está vacío, establecer como NULL
+        // If last_execution is empty, set as NULL
         if (empty($this->last_execution)) {
             $this->last_execution = null;
         }
 
-        // SIEMPRE actualizar cron_unix_style basándose en los campos individuales
+        // ALWAYS update cron_unix_style based on individual fields
         $this->cron_unix_style = $this->generateCronUnixStyle();
 
         return parent::add($autoDate, $nullValues);
     }
 
     /**
-     * Actualiza la fecha de modificación antes de actualizar
+     * Updates modification date before updating
      */
     public function update($nullValues = false)
     {
         $this->date_upd = date('Y-m-d H:i:s');
         
-        // Si last_execution está vacío, establecer como NULL
+        // If last_execution is empty, set as NULL
         if (empty($this->last_execution)) {
             $this->last_execution = null;
         }
         
-        // SIEMPRE actualizar cron_unix_style basándose en los campos individuales
+        // ALWAYS update cron_unix_style based on individual fields
         $this->cron_unix_style = $this->generateCronUnixStyle();
         
         return parent::update($nullValues);

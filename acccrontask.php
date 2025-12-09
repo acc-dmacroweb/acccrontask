@@ -45,18 +45,18 @@ class AccCronTask extends Module
 
         parent::__construct();
 
-        $this->displayName = $this->l('ACC Cron Task');
-        $this->description = $this->l('Gestión avanzada de tareas cron personalizadas');
-        $this->confirmUninstall = $this->l('¿Está seguro de que desea desinstalar?');
+        $this->displayName = $this->l('Cron Tasks Manager PRO');
+        $this->description = $this->l('Advanced management of custom cron tasks');
+        $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
         
-        // Cargar clases del módulo usando el autoloader de PrestaShop
+        // Load module classes using PrestaShop autoloader
         $this->autoload();
     }
     
     /**
-     * Autoload de clases del módulo
-     * PrestaShop 1.7+ carga automáticamente las clases de modules/[nombre]/classes/
-     * pero podemos asegurarnos aquí
+     * Module classes autoload
+     * PrestaShop 1.7+ automatically loads classes from modules/[name]/classes/
+     * but we can ensure it here
      */
     protected function autoload()
     {
@@ -86,15 +86,15 @@ class AccCronTask extends Module
             return false;
         }
         
-        // Limpiar caché después de la instalación
+        // Clear cache after installation
         $this->clearCache();
         
         return true;
     }
     
     /**
-     * Limpia la caché de PrestaShop
-     * Compatible con PrestaShop 1.7 y 9
+     * Clears PrestaShop cache
+     * Compatible with PrestaShop 1.7 and 9
      */
     protected function clearCache()
     {
@@ -123,14 +123,14 @@ class AccCronTask extends Module
     }
     
     /**
-     * Genera un token fijo para el cron basado en la clave secreta de PrestaShop
-     * Este token siempre será el mismo, independientemente de la sesión
-     * @return string Token fijo
+     * Generates a fixed token for cron based on PrestaShop secret key
+     * This token will always be the same, regardless of session
+     * @return string Fixed token
      */
     public static function getCronToken()
     {
-        // Usar la clave secreta de PrestaShop para generar un token fijo
-        // Este token siempre será el mismo en la misma instalación
+        // Use PrestaShop secret key to generate a fixed token
+        // This token will always be the same in the same installation
         return md5(_COOKIE_KEY_ . 'acccrontask_cron_token' . _COOKIE_IV_);
     }
 
@@ -163,14 +163,14 @@ class AccCronTask extends Module
 
         $result = Db::getInstance()->execute($sql);
         
-        // Agregar el campo cron_unix_style si la tabla ya existe (para actualizaciones)
+        // Add cron_unix_style field if table already exists (for updates)
         $this->addCronUnixStyleColumnIfNotExists();
         
         return $result;
     }
     
     /**
-     * Agrega la columna cron_unix_style si no existe (para actualizaciones)
+     * Adds cron_unix_style column if it doesn't exist (for updates)
      */
     public function addCronUnixStyleColumnIfNotExists()
     {
@@ -182,13 +182,13 @@ class AccCronTask extends Module
                     ADD COLUMN `cron_unix_style` varchar(255) NULL AFTER `hour`';
             Db::getInstance()->execute($sql);
             
-            // Generar cron_unix_style para tareas existentes
+            // Generate cron_unix_style for existing tasks
             $this->generateCronUnixStyleForExistingTasks();
         }
     }
     
     /**
-     * Genera cron_unix_style para tareas existentes que no lo tengan
+     * Generates cron_unix_style for existing tasks that don't have it
      */
     protected function generateCronUnixStyleForExistingTasks()
     {
@@ -214,7 +214,7 @@ class AccCronTask extends Module
 
     protected function installTab()
     {
-        // Verificar si el Tab ya existe
+        // Check if Tab already exists
         $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
         
         if ($id_tab) {
@@ -227,16 +227,16 @@ class AccCronTask extends Module
         $tab->class_name = 'AdminAccCronTask';
         $tab->name = [];
         foreach (Language::getLanguages(true) as $lang) {
-            $tab->name[$lang['id_lang']] = 'ACC Cron Task';
+            $tab->name[$lang['id_lang']] = 'Cron Tasks Manager PRO';
         }
         $tab->id_parent = (int)Tab::getIdFromClassName('AdminTools');
         $tab->module = $this->name;
         
-        // Para PrestaShop 9.0+, NO establecemos route_name
-        // El sistema generará la ruta automáticamente basándose en class_name y módulo
-        // En PS 1.7 y PS 8 funciona sin route_name (como en PS 1.7)
-        // En PS 9, simplemente no tocamos route_name para que use el sistema automático
-        // No establecemos route_name en PS 9 para evitar errores de "route does not exist"
+        // For PrestaShop 9.0+, we do NOT set route_name
+        // The system will automatically generate the route based on class_name and module
+        // In PS 1.7 and PS 8 it works without route_name (as in PS 1.7)
+        // In PS 9, we simply don't touch route_name so it uses the automatic system
+        // We don't set route_name in PS 9 to avoid "route does not exist" errors
         
         if ($id_tab) {
             return $tab->update();
@@ -256,34 +256,34 @@ class AccCronTask extends Module
     }
 
     /**
-     * Actualiza el Tab para PrestaShop 9.0+
-     * Útil si el módulo fue instalado antes de esta actualización
-     * Solo necesario para PS 9 donde route_name es obligatorio
+     * Updates Tab for PrestaShop 9.0+
+     * Useful if module was installed before this update
+     * Only necessary for PS 9 where route_name is mandatory
      */
     public function updateTabForPS9()
     {
         $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
         if ($id_tab) {
             $tab = new Tab($id_tab);
-            // Para PrestaShop 9.0+, NO establecemos route_name
-            // El sistema generará la ruta automáticamente
-            // Solo aseguramos que los campos básicos estén correctos
+            // For PrestaShop 9.0+, we do NOT set route_name
+            // The system will automatically generate the route
+            // We only ensure that basic fields are correct
             if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
-                // Asegurar que el módulo esté asignado
+                // Ensure module is assigned
                 if (empty($tab->module)) {
                     $tab->module = $this->name;
                 }
                 
-                // Asegurar que active esté en 1
+                // Ensure active is set to 1
                 $tab->active = 1;
                 
-                // Asegurar que class_name esté correcto
+                // Ensure class_name is correct
                 if (empty($tab->class_name)) {
                     $tab->class_name = 'AdminAccCronTask';
                 }
                 
-                // NO establecemos route_name - el sistema lo generará automáticamente
-                // Si route_name está establecido y causa problemas, lo eliminamos
+                // We do NOT set route_name - the system will generate it automatically
+                // If route_name is set and causes problems, we remove it
                 if (property_exists($tab, 'route_name') && !empty($tab->route_name)) {
                     $tab->route_name = '';
                 }
@@ -299,15 +299,15 @@ class AccCronTask extends Module
 
     public function getContent()
     {
-        // Asegurar que la columna cron_unix_style existe (para módulos ya instalados)
+        // Ensure cron_unix_style column exists (for already installed modules)
         $this->addCronUnixStyleColumnIfNotExists();
         
-        // Solo actualizar Tab para PS 9.0+ (donde route_name es obligatorio)
-        // PS 1.7 y PS 8 funcionan sin route_name
+        // Only update Tab for PS 9.0+ (where route_name is mandatory)
+        // PS 1.7 and PS 8 work without route_name
         if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
-            // Forzar actualización del Tab en PS 9
+            // Force Tab update in PS 9
             $this->updateTabForPS9();
-            // Limpiar caché de routing después de actualizar
+            // Clear routing cache after updating
             $this->clearCache();
         }
         

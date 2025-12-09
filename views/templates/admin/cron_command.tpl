@@ -26,27 +26,27 @@
 <div class="panel">
     <div class="panel-heading">
         <i class="icon-cogs"></i>
-        {l s='Comando Cron para el Servidor' mod='acccrontask'}
+        {l s='Cron Command for Server' mod='acccrontask'}
     </div>
     <div class="form-wrapper">
         <div class="alert alert-info">
-            <p>{l s='El modo avanzado permite que usted utilice su propio gestor de tareas cron en lugar del servicio web de tareas cron de PrestaShop. Antes que nada, asegúrese de que la librería "curl" está instalada en su servidor.' mod='acccrontask'}</p>
-            <p><strong>{l s='Para ejecutar sus tareas cron, por favor, inserte la siguiente línea en su gestor de tareas cron:' mod='acccrontask'}</strong></p>
+            <p>{l s='Advanced mode allows you to use your own cron task manager instead of PrestaShop web cron service. First, make sure the "curl" library is installed on your server.' mod='acccrontask'}</p>
+            <p><strong>{l s='To execute your cron tasks, please insert the following line in your cron task manager:' mod='acccrontask'}</strong></p>
         </div>
         <div class="form-group">
             <label class="control-label col-lg-3">
-                {l s='Comando Cron:' mod='acccrontask'}
+                {l s='Cron Command:' mod='acccrontask'}
             </label>
             <div class="col-lg-9">
                 <textarea class="form-control" rows="3" readonly>{$cron_command|escape:'html':'UTF-8'}</textarea>
                 <p class="help-block">
-                    {l s='Copie este comando y añádalo a su crontab del servidor' mod='acccrontask'}
+                    {l s='Copy this command and add it to your server crontab' mod='acccrontask'}
                 </p>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label col-lg-3">
-                {l s='URL de ejecución:' mod='acccrontask'}
+                {l s='Execution URL:' mod='acccrontask'}
             </label>
             <div class="col-lg-9">
                 <input type="text" class="form-control" value="{$cron_url|escape:'html':'UTF-8'}" readonly />
@@ -56,7 +56,7 @@
     <div class="panel-footer">
         <a href="{$link->getAdminLink('AdminAccCronTask')|escape:'html':'UTF-8'}" class="btn btn-default">
             <i class="process-icon-back"></i>
-            {l s='Volver' mod='acccrontask'}
+            {l s='Back' mod='acccrontask'}
         </a>
     </div>
 </div>

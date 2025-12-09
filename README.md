@@ -1,4 +1,4 @@
-# ACC Cron Task - Cron Task Management Module for PrestaShop
+# Cron Tasks Manager PRO - Cron Task Management Module for PrestaShop
 
 ## Description
 
@@ -19,7 +19,7 @@ PrestaShop module that allows you to manage custom cron tasks with a modern and 
 1. Upload the `acccrontask` folder to the `modules/` directory of your PrestaShop installation
 2. Go to PrestaShop Back Office
 3. Navigate to Modules > Module Manager
-4. Search for "ACC Cron Task"
+4. Search for "Cron Tasks Manager PRO"
 5. Click on "Install"
 
 **Note for PrestaShop 9.0**: If you encounter any routing issues after installation, try accessing the module configuration page once. The module will automatically update its Tab configuration for PrestaShop 9 compatibility.
@@ -28,7 +28,7 @@ PrestaShop module that allows you to manage custom cron tasks with a modern and 
 
 ### Create a new cron task
 
-1. Go to Tools > ACC Cron Task
+1. Go to Tools > Cron Tasks Manager PRO
 2. Click on "Add new task"
 3. Fill in the fields:
    - **Name**: Descriptive name for the task
@@ -114,7 +114,7 @@ The module uses a fixed security token generated from your PrestaShop installati
 
 ### PrestaShop 9.0 - Controller Not Found Error
 If you see "Controller AdminAccCronTask not found" in PrestaShop 9.0:
-1. Access the module configuration page (Modules > Module Manager > ACC Cron Task > Configure)
+1. Access the module configuration page (Modules > Module Manager > Cron Tasks Manager PRO > Configure)
 2. The module will automatically update its Tab configuration
 3. Clear PrestaShop cache (Advanced Parameters > Performance > Clear cache)
 4. Try accessing the module again
