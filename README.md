@@ -194,10 +194,10 @@ crontasksmanagerpro/
 ├── index.php                         # Security file
 ├── logo.png                          # Module logo
 ├── classes/
-│   └── crontasksmanagerProModel.php    # Data model (ObjectModel)
+│   └── CronTasksManagerProModel.php    # Data model (ObjectModel)
 ├── controllers/
 │   ├── admin/
-│   │   └── AdmincrontasksmanagerProController.php  # Admin controller
+│   │   └── AdminCronTasksManagerProController.php  # Admin controller
 │   └── front/
 │       └── cron.php                  # Front controller for cron execution
 ├── views/
