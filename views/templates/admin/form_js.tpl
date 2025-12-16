@@ -118,7 +118,7 @@ $(document).ready(function() {
     $(document).on('blur', 'input[name="minute"]', function() {
         var minute = parseInt($(this).val());
         if (isNaN(minute) || minute < 0 || minute > 59) {
-            alert('{l s="Minute must be between 0 and 59" mod="acccrontask"}');
+            alert('{l s="Minute must be between 0 and 59" mod="crontasksmanagerpro"}');
             $(this).val('');
             $(this).focus();
         }
@@ -128,7 +128,7 @@ $(document).ready(function() {
     $(document).on('blur', 'input[name="hour"]', function() {
         var hour = parseInt($(this).val());
         if ($(this).val() !== '' && (isNaN(hour) || hour < 0 || hour > 23)) {
-            alert('{l s="Hour must be between 0 and 23" mod="acccrontask"}');
+            alert('{l s="Hour must be between 0 and 23" mod="crontasksmanagerpro"}');
             $(this).val('');
             $(this).focus();
         }
@@ -138,7 +138,7 @@ $(document).ready(function() {
     $(document).on('blur', 'input[name="day_of_month"]', function() {
         var day = parseInt($(this).val());
         if ($(this).val() !== '' && (isNaN(day) || day < 1 || day > 31)) {
-            alert('{l s="Day of month must be between 1 and 31" mod="acccrontask"}');
+            alert('{l s="Day of month must be between 1 and 31" mod="crontasksmanagerpro"}');
             $(this).val('');
             $(this).focus();
         }
@@ -153,7 +153,7 @@ $(document).ready(function() {
             var cronValue = $('input[name="cron_unix_style"]').val().trim();
             
             if (cronValue === '') {
-                alert('{l s="You must enter a cron unix style format" mod="acccrontask"}');
+                alert('{l s="You must enter a cron unix style format" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -162,7 +162,7 @@ $(document).ready(function() {
             // Validate basic format: must have 5 parts separated by spaces
             var parts = cronValue.split(/\s+/);
             if (parts.length !== 5) {
-                alert('{l s="The cron unix style format must have 5 parts separated by spaces: minute hour day_of_month month day_of_week. Example: 0 2 * * *" mod="acccrontask"}');
+                alert('{l s="The cron unix style format must have 5 parts separated by spaces: minute hour day_of_month month day_of_week. Example: 0 2 * * *" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -177,7 +177,7 @@ $(document).ready(function() {
             
             // Validate minute (0-59)
             if (!minutePattern.test(parts[0])) {
-                alert('{l s="The minute (first part) is not valid. Valid examples: *, 5, 0-59, */5, 0,5,10" mod="acccrontask"}');
+                alert('{l s="The minute (first part) is not valid. Valid examples: *, 5, 0-59, */5, 0,5,10" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -185,7 +185,7 @@ $(document).ready(function() {
             if (parts[0] !== '*' && !parts[0].includes('/') && !parts[0].includes('-') && !parts[0].includes(',')) {
                 var minuteNum = parseInt(parts[0]);
                 if (isNaN(minuteNum) || minuteNum < 0 || minuteNum > 59) {
-                    alert('{l s="Minute must be between 0 and 59" mod="acccrontask"}');
+                    alert('{l s="Minute must be between 0 and 59" mod="crontasksmanagerpro"}');
                     $('input[name="cron_unix_style"]').focus();
                     e.preventDefault();
                     return false;
@@ -194,7 +194,7 @@ $(document).ready(function() {
             
             // Validate hour (0-23)
             if (!hourPattern.test(parts[1])) {
-                alert('{l s="The hour (second part) is not valid. Valid examples: *, 2, 0-23, */2" mod="acccrontask"}');
+                alert('{l s="The hour (second part) is not valid. Valid examples: *, 2, 0-23, */2" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -202,7 +202,7 @@ $(document).ready(function() {
             if (parts[1] !== '*' && !parts[1].includes('/') && !parts[1].includes('-') && !parts[1].includes(',')) {
                 var hourNum = parseInt(parts[1]);
                 if (isNaN(hourNum) || hourNum < 0 || hourNum > 23) {
-                    alert('{l s="Hour must be between 0 and 23" mod="acccrontask"}');
+                    alert('{l s="Hour must be between 0 and 23" mod="crontasksmanagerpro"}');
                     $('input[name="cron_unix_style"]').focus();
                     e.preventDefault();
                     return false;
@@ -211,7 +211,7 @@ $(document).ready(function() {
             
             // Validate day of month (1-31)
             if (!dayPattern.test(parts[2])) {
-                alert('{l s="The day of month (third part) is not valid. Valid examples: *, 1, 1-31" mod="acccrontask"}');
+                alert('{l s="The day of month (third part) is not valid. Valid examples: *, 1, 1-31" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -219,7 +219,7 @@ $(document).ready(function() {
             if (parts[2] !== '*' && !parts[2].includes('/') && !parts[2].includes('-') && !parts[2].includes(',')) {
                 var dayNum = parseInt(parts[2]);
                 if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
-                    alert('{l s="Day of month must be between 1 and 31" mod="acccrontask"}');
+                    alert('{l s="Day of month must be between 1 and 31" mod="crontasksmanagerpro"}');
                     $('input[name="cron_unix_style"]').focus();
                     e.preventDefault();
                     return false;
@@ -228,7 +228,7 @@ $(document).ready(function() {
             
             // Validate month (1-12)
             if (!monthPattern.test(parts[3])) {
-                alert('{l s="The month (fourth part) is not valid. Valid examples: *, 1, 1-12" mod="acccrontask"}');
+                alert('{l s="The month (fourth part) is not valid. Valid examples: *, 1, 1-12" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -236,7 +236,7 @@ $(document).ready(function() {
             if (parts[3] !== '*' && !parts[3].includes('/') && !parts[3].includes('-') && !parts[3].includes(',')) {
                 var monthNum = parseInt(parts[3]);
                 if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
-                    alert('{l s="Month must be between 1 and 12" mod="acccrontask"}');
+                    alert('{l s="Month must be between 1 and 12" mod="crontasksmanagerpro"}');
                     $('input[name="cron_unix_style"]').focus();
                     e.preventDefault();
                     return false;
@@ -245,7 +245,7 @@ $(document).ready(function() {
             
             // Validate day of week (0-6)
             if (!dayOfWeekPattern.test(parts[4])) {
-                alert('{l s="The day of week (fifth part) is not valid. Valid examples: *, 0, 0-6" mod="acccrontask"}');
+                alert('{l s="The day of week (fifth part) is not valid. Valid examples: *, 0, 0-6" mod="crontasksmanagerpro"}');
                 $('input[name="cron_unix_style"]').focus();
                 e.preventDefault();
                 return false;
@@ -253,7 +253,7 @@ $(document).ready(function() {
             if (parts[4] !== '*' && !parts[4].includes('/') && !parts[4].includes('-') && !parts[4].includes(',')) {
                 var dayOfWeekNum = parseInt(parts[4]);
                 if (isNaN(dayOfWeekNum) || dayOfWeekNum < 0 || dayOfWeekNum > 6) {
-                    alert('{l s="Day of week must be between 0 and 6" mod="acccrontask"}');
+                    alert('{l s="Day of week must be between 0 and 6" mod="crontasksmanagerpro"}');
                     $('input[name="cron_unix_style"]').focus();
                     e.preventDefault();
                     return false;

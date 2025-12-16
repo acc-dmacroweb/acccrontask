@@ -27,7 +27,7 @@
 
 {* Configuración para JavaScript - pasar variables de Smarty a JS *}
 <script type="text/javascript">
-    window.acccrontaskConfig = {
+    window.crontasksmanagerproConfig = {
         baseUrl: '{$current_index|escape:'javascript':'UTF-8'}',
         token: '{$token|escape:'javascript':'UTF-8'}'
     };

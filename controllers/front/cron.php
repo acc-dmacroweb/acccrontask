@@ -28,7 +28,7 @@ require_once dirname(__FILE__) . '/../../../../config/config.inc.php';
 require_once dirname(__FILE__) . '/../../../../init.php';
 
 // Cargar el módulo para que se ejecute su autoload
-$module = Module::getInstanceByName('acccrontask');
+$module = Module::getInstanceByName('crontasksmanagerpro');
 if (!$module || !$module->active) {
     http_response_code(404);
     die('Module not found or inactive');
@@ -36,7 +36,7 @@ if (!$module || !$module->active) {
 
 $token = Tools::getValue('token');
 // Usar el token fijo del módulo (siempre el mismo, independiente de la sesión)
-$expectedToken = AccCronTask::getCronToken();
+$expectedToken = CronTasksManagerPro::getCronToken();
 
 if (empty($token) || $token !== $expectedToken) {
     http_response_code(403);
@@ -47,10 +47,10 @@ if (empty($token) || $token !== $expectedToken) {
     die('Invalid token');
 }
 
-$cronJobs = AccCronTaskModel::getActiveCronJobs();
+$cronJobs = CronTasksManagerModelPro::getActiveCronJobs();
 
 foreach ($cronJobs as $jobData) {
-    $job = new AccCronTaskModel((int)$jobData['id_acccrontask']);
+    $job = new CronTasksManagerModelPro((int)$jobData['id_crontasksmanagerpro']);
     
     if (Validate::isLoadedObject($job) && $job->shouldExecute()) {
         $job->execute();

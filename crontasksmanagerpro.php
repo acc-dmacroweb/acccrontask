@@ -28,11 +28,11 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class AccCronTask extends Module
+class CronTasksManagerPro extends Module
 {
     public function __construct()
     {
-        $this->name = 'acccrontask';
+        $this->name = 'crontasksmanagerpro';
         $this->tab = 'administration';
         $this->version = '1.0.0';
         $this->author = 'ACC';
@@ -131,7 +131,7 @@ class AccCronTask extends Module
     {
         // Use PrestaShop secret key to generate a fixed token
         // This token will always be the same in the same installation
-        return md5(_COOKIE_KEY_ . 'acccrontask_cron_token' . _COOKIE_IV_);
+        return md5(_COOKIE_KEY_ . 'crontasksmanagerpro_cron_token1' . _COOKIE_IV_);
     }
 
     public function uninstall()
@@ -143,8 +143,8 @@ class AccCronTask extends Module
 
     protected function installDb()
     {
-        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'acccrontask` (
-            `id_acccrontask` int(11) NOT NULL AUTO_INCREMENT,
+        $sql = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'crontasksmanagerpro` (
+            `id_crontasksmanagerpro` int(11) NOT NULL AUTO_INCREMENT,
             `name` varchar(255) NOT NULL,
             `url` text NOT NULL,
             `frequency_day` int(11) NOT NULL DEFAULT 0,
@@ -158,7 +158,7 @@ class AccCronTask extends Module
             `last_execution` datetime NULL,
             `date_add` datetime NOT NULL,
             `date_upd` datetime NOT NULL,
-            PRIMARY KEY (`id_acccrontask`)
+            PRIMARY KEY (`id_crontasksmanagerpro`)
         ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
         $result = Db::getInstance()->execute($sql);
@@ -174,11 +174,11 @@ class AccCronTask extends Module
      */
     public function addCronUnixStyleColumnIfNotExists()
     {
-        $sql = 'SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'acccrontask` LIKE "cron_unix_style"';
+        $sql = 'SHOW COLUMNS FROM `' . _DB_PREFIX_ . 'crontasksmanagerpro` LIKE "cron_unix_style"';
         $exists = Db::getInstance()->executeS($sql);
         
         if (empty($exists)) {
-            $sql = 'ALTER TABLE `' . _DB_PREFIX_ . 'acccrontask` 
+            $sql = 'ALTER TABLE `' . _DB_PREFIX_ . 'crontasksmanagerpro` 
                     ADD COLUMN `cron_unix_style` varchar(255) NULL AFTER `hour`';
             Db::getInstance()->execute($sql);
             
@@ -192,12 +192,12 @@ class AccCronTask extends Module
      */
     protected function generateCronUnixStyleForExistingTasks()
     {
-        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'acccrontask` WHERE `cron_unix_style` IS NULL OR `cron_unix_style` = ""';
+        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'crontasksmanagerpro` WHERE `cron_unix_style` IS NULL OR `cron_unix_style` = ""';
         $tasks = Db::getInstance()->executeS($sql);
         
         if ($tasks) {
             foreach ($tasks as $taskData) {
-                $task = new AccCronTaskModel((int)$taskData['id_acccrontask']);
+                $task = new CronTasksManagerModel((int)$taskData['id_crontasksmanagerpro']);
                 if (Validate::isLoadedObject($task)) {
                     $cronStyle = $task->generateCronUnixStyle();
                     $task->cron_unix_style = $cronStyle;
@@ -209,13 +209,13 @@ class AccCronTask extends Module
 
     protected function uninstallDb()
     {
-        return Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'acccrontask`');
+        return Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'crontasksmanagerpro`');
     }
 
     protected function installTab()
     {
         // Check if Tab already exists
-        $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
+        $id_tab = (int)Tab::getIdFromClassName('AdminCronTasksManagerPro');
         
         if ($id_tab) {
             $tab = new Tab($id_tab);
@@ -224,7 +224,7 @@ class AccCronTask extends Module
         }
         
         $tab->active = 1;
-        $tab->class_name = 'AdminAccCronTask';
+        $tab->class_name = 'AdminCronTasksManagerPro';
         $tab->name = [];
         foreach (Language::getLanguages(true) as $lang) {
             $tab->name[$lang['id_lang']] = 'Cron Tasks Manager PRO';
@@ -247,7 +247,7 @@ class AccCronTask extends Module
 
     protected function uninstallTab()
     {
-        $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
+        $id_tab = (int)Tab::getIdFromClassName('AdminCronTasksManagerPro');
         if ($id_tab) {
             $tab = new Tab($id_tab);
             return $tab->delete();
@@ -262,7 +262,7 @@ class AccCronTask extends Module
      */
     public function updateTabForPS9()
     {
-        $id_tab = (int)Tab::getIdFromClassName('AdminAccCronTask');
+        $id_tab = (int)Tab::getIdFromClassName('AdminCronTasksManagerPro');
         if ($id_tab) {
             $tab = new Tab($id_tab);
             // For PrestaShop 9.0+, we do NOT set route_name
@@ -279,7 +279,7 @@ class AccCronTask extends Module
                 
                 // Ensure class_name is correct
                 if (empty($tab->class_name)) {
-                    $tab->class_name = 'AdminAccCronTask';
+                    $tab->class_name = 'AdminCronTasksManagerPro';
                 }
                 
                 // We do NOT set route_name - the system will generate it automatically
@@ -311,7 +311,7 @@ class AccCronTask extends Module
             $this->clearCache();
         }
         
-        Tools::redirectAdmin($this->context->link->getAdminLink('AdminAccCronTask'));
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminCronTasksManagerPro'));
     }
 }
 

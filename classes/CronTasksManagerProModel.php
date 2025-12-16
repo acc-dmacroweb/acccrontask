@@ -28,9 +28,9 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class AccCronTaskModel extends ObjectModel
+class CronTasksManagerProModel extends ObjectModel
 {
-    public $id_acccrontask;
+    public $id_crontasksmanagerpro;
     public $name;
     public $url;
     public $frequency_day;
@@ -46,8 +46,8 @@ class AccCronTaskModel extends ObjectModel
     public $date_upd;
 
     public static $definition = [
-        'table' => 'acccrontask',
-        'primary' => 'id_acccrontask',
+        'table' => 'crontasksmanagerpro',
+        'primary' => 'id_crontasksmanagerpro',
         'fields' => [
             'name' => ['type' => self::TYPE_STRING, 'validate' => 'isGenericName', 'required' => true, 'size' => 255],
             'url' => ['type' => self::TYPE_STRING, 'validate' => 'isUrl', 'required' => true],
@@ -71,9 +71,9 @@ class AccCronTaskModel extends ObjectModel
      */
     public static function getActiveCronJobs()
     {
-        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'acccrontask` 
+        $sql = 'SELECT * FROM `' . _DB_PREFIX_ . 'crontasksmanagerpro` 
                 WHERE `active` = 1 
-                ORDER BY `id_acccrontask` ASC';
+                ORDER BY `id_crontasksmanagerpro` ASC';
         
         return Db::getInstance()->executeS($sql);
     }

@@ -24,16 +24,16 @@
  * International Registered Trademark & Property of PrestaShop SA
  */
 
-require_once _PS_MODULE_DIR_ . 'acccrontask/acccrontask.php';
+require_once _PS_MODULE_DIR_ . 'crontasksmanagerpro/crontasksmanagerpro.php';
 
-class AdminAccCronTaskController extends ModuleAdminController
+class AdminCronTasksManagerProController extends ModuleAdminController
 {
     public function __construct()
     {
         $this->bootstrap = true;
-        $this->table = 'acccrontask';
-        $this->className = 'AccCronTaskModel';
-        $this->identifier = 'id_acccrontask';
+        $this->table = 'crontasksmanagerpro';
+        $this->className = 'CronTasksManagerProModel';
+        $this->identifier = 'id_crontasksmanagerpro';
         $this->lang = false;
         $this->context = Context::getContext();
 
@@ -41,7 +41,7 @@ class AdminAccCronTaskController extends ModuleAdminController
         
         // Ensure module is available for translations (compatible with PS 9)
         if (!$this->module) {
-            $this->module = Module::getInstanceByName('acccrontask');
+            $this->module = Module::getInstanceByName('crontasksmanagerpro');
         }
         
         // Ensure cron_unix_style column exists in database
@@ -133,21 +133,13 @@ class AdminAccCronTaskController extends ModuleAdminController
             return;
         }
         
-<<<<<<< HEAD
         // Register CSS and JS for listing
-=======
-        // Registrar CSS y JS para el listado
->>>>>>> df7d71b524e3b90e8172f0780eda80a9fcceb1a0
         if ($this->display == 'list' || $this->display == '') {
             $this->addCSS($this->module->getPathUri() . 'views/css/list.css');
             $this->addJS($this->module->getPathUri() . 'views/js/list.js');
         }
         
-<<<<<<< HEAD
         // We no longer need to regenerate token, we use AdminModules token
-=======
-        // Ya no necesitamos regenerar token, usamos el de AdminModules
->>>>>>> df7d71b524e3b90e8172f0780eda80a9fcceb1a0
 
         parent::initContent();
     }
@@ -175,12 +167,12 @@ class AdminAccCronTaskController extends ModuleAdminController
             'list' => $list,
             'token' => $this->token,
             'current_index' => self::$currentIndex,
-            'controller' => 'AdminAccCronTask',
+            'controller' => 'AdminCronTasksManagerPro',
             'module_dir' => $this->module->getPathUri(),
         ]);
 
         return $this->context->smarty->fetch(
-            _PS_MODULE_DIR_ . 'acccrontask/views/templates/admin/list_override.tpl'
+            _PS_MODULE_DIR_ . 'crontasksmanagerpro/views/templates/admin/list_override.tpl'
         );
     }
 
@@ -339,7 +331,7 @@ class AdminAccCronTaskController extends ModuleAdminController
         ]);
         
         $js = $this->context->smarty->fetch(
-            _PS_MODULE_DIR_ . 'acccrontask/views/templates/admin/form_js.tpl'
+            _PS_MODULE_DIR_ . 'crontasksmanagerpro/views/templates/admin/form_js.tpl'
         );
         
         return $form . $js;
@@ -595,7 +587,7 @@ class AdminAccCronTaskController extends ModuleAdminController
 
     public function processStatus()
     {
-        $cron = new AccCronTaskModel((int)Tools::getValue($this->identifier));
+        $cron = new CronTasksManagerProModel((int)Tools::getValue($this->identifier));
         if (Validate::isLoadedObject($cron)) {
             $cron->active = !$cron->active;
             $cron->save();
@@ -605,7 +597,7 @@ class AdminAccCronTaskController extends ModuleAdminController
 
     public function processExecuteNow()
     {
-        $cron = new AccCronTaskModel((int)Tools::getValue($this->identifier));
+        $cron = new CronTasksManagerProModel((int)Tools::getValue($this->identifier));
         if (Validate::isLoadedObject($cron)) {
             $result = $cron->executeNow();
             if ($result) {
@@ -666,13 +658,13 @@ class AdminAccCronTaskController extends ModuleAdminController
     public function generateCronCommand()
     {
         // Use fixed module token (always the same, independent of session)
-        $token = AccCronTask::getCronToken();
+        $token = CronTasksManagerPro::getCronToken();
         
         $baseUrl = (Configuration::get('PS_SSL_ENABLED') ? 'https://' : 'http://') . 
                    $_SERVER['HTTP_HOST'] . 
                    __PS_BASE_URI__;
         
-        $cronUrl = $baseUrl . 'modules/acccrontask/controllers/front/cron.php?token=' . $token;
+        $cronUrl = $baseUrl . 'modules/crontasksmanagerpro/controllers/front/cron.php?token=' . $token;
         
         // The cron command runs every minute by default
         // This allows the module to internally check which tasks should be executed
@@ -682,10 +674,12 @@ class AdminAccCronTaskController extends ModuleAdminController
             'cron_command' => $cronCommand,
             'cron_url' => $cronUrl,
             'link' => $this->context->link,
+            'token' => $this->token,
+            'current_index' => self::$currentIndex,
         ]);
 
         $this->content = $this->context->smarty->fetch(
-            _PS_MODULE_DIR_ . 'acccrontask/views/templates/admin/cron_command.tpl'
+            _PS_MODULE_DIR_ . 'crontasksmanagerpro/views/templates/admin/cron_command.tpl'
         );
 
         $this->context->smarty->assign('content', $this->content);
@@ -722,7 +716,7 @@ class AdminAccCronTaskController extends ModuleAdminController
                         $this->errors[] = $this->module->l('You must enter a cron unix style format');
                         return false;
                     }
-                    if (!AccCronTaskModel::validateCronUnixStyle($cronUnixStyle)) {
+                    if (!CronTasksManagerProModel::validateCronUnixStyle($cronUnixStyle)) {
                         $this->errors[] = $this->module->l('The cron unix style format is not valid. It must be: minute hour day_of_month month day_of_week. Example: "0 2 * * *"');
                         return false;
                     }
@@ -814,7 +808,7 @@ class AdminAccCronTaskController extends ModuleAdminController
             
             // ALWAYS generate cron_unix_style based on selected individual fields
             // Create a temporary object to generate cron_unix_style
-            $tempTask = new AccCronTaskModel();
+            $tempTask = new CronTasksManagerProModel();
             $tempTask->frequency_day = $frequencyDay;
             $tempTask->hour = (int)$hour;
             $tempTask->minute = (int)$minute;
@@ -824,7 +818,7 @@ class AdminAccCronTaskController extends ModuleAdminController
             
             // If frequency is 6 (Cron Unix Style) and user entered a valid value, use it temporarily
             // so generateCronUnixStyle() can use it if there are no valid individual fields
-            if ($frequencyDay == 6 && !empty($cronUnixStyle) && AccCronTaskModel::validateCronUnixStyle($cronUnixStyle)) {
+            if ($frequencyDay == 6 && !empty($cronUnixStyle) && CronTasksManagerProModel::validateCronUnixStyle($cronUnixStyle)) {
                 $tempTask->cron_unix_style = $cronUnixStyle;
             }
             
